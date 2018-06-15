@@ -1,55 +1,13 @@
 "use strict"
 const core = require ('../lib/core')
-  , { letter, steal, force, join, normalize, url, print:str, parse, DRIVE, AUTH } = core
+  , { letter, steal, force, join, normalize, url, print, parse, DRIVE, AUTH } = core
   , Tests = require ('./testset')
-  , percentEncode = require ('../lib/utf')
 
 const log = console.log.bind (console)
 
 
 // Test 
 // ----
-
-function print (url) {
-  return str (url.map (escapeToken))
-}
-
-
-const HOST_ESC = /[\x00-\x1F\x7F-\xFF]/g
-const FRAG_ESC = /[\x00-\x1F\x7F-\xFF "<>`]/g
-const PATH_ESC = /[\x00-\x1F\x7F-\xFF "<>`#?{}]/g
-const QUERY_ESC = /[\x00-\x20\x7F-\xFF"#<>]/g
-
-function esc (char) {
-  var b = char.charCodeAt (0)
-  return (b > 0xf ? '%' : '%0') + b.toString (16) .toUpperCase ()
-}
-
-
-function escapeToken (tok) {
-  let v = tok[1]
-
-  switch (tok[0]) {
-    case core.AUTH:
-      v = v //percentEncode (v) .replace (HOST_ESC, esc)
-    break
-    case core.FRAG:
-      v = percentEncode (v) .replace (FRAG_ESC, esc)
-    break
-    case core.DIR:
-    case core.FILE:
-      v = percentEncode (v) .replace (PATH_ESC, esc)
-    break
-    case core.QUERY:
-      v = percentEncode (v) .replace (QUERY_ESC, esc)
-    break
-    default:
-      v = percentEncode (v)
-  }
-  
- return [tok[0], v]
-}
-
 
 function baseUrl (string, scheme) {
   scheme = typeof scheme === 'string' ? scheme : ''
