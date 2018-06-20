@@ -67,7 +67,7 @@ The public API exposes a single constructor, `Url`.
 All methods on `Url` objects are immutable. 
 
 
-### Url Constructor
+### Constructor: new Url (string, conf)
 
 Given an URL-string `string` and optionally a parser configuration object `conf`,
 `new Url (string, conf)` returns a new Url object.  
@@ -77,45 +77,90 @@ or an object with three optional fields
 `convertSlashes:boolean`, `detectDrive:boolean`, `baseScheme:string`. 
 
 
-### fragment
+### url.fragment
 
-`url.fragment` is a getter that returns the fragment part as a string, 
-or `null` if no such part is present. 
+Given an Url object `url`, `fragment` is a getter that returns the fragment part of `url` as a string, or `null` if no such part is present. 
 
-Note that `new Url ('/abc/#').fragment` yields `''` whereas
-`new Url ('/abc/').fragment` yields `null`. 
+	new Url ('http://foo#baz').fragment
+	// => 'baz'
 
+	new Url ('/abc/#').fragment
+	// => ''
 
-### query
-
-`url.query` is a getter that returns the query part as a string, 
-or `null` if no such part is present. 
-
-Note that `new Url ('/abc/?').query` yields `''` whereas
-`new Url ('/abc/').query` yields `null`. 
+	new Url ('/abc/').fragment
+	// => null
 
 
-### scheme
+### url.query
 
-`url.scheme` is a getter that returns the scheme as a string, 
-or `null` if the scheme part is not present (e.g. in relative URLs). 
+Given an Url object `url`, `url.query` is a getter that returns the query part of `url` as a string, or `null` if no such part is present. 
+
+	new ReUrl ('http://foo?search#baz').query
+	// => 'search'
+
+	new Url ('/abc/?').query
+	// => ''
+
+	new Url ('/abc/').query
+	// => null
 
 
-### toString
+### url.scheme
 
-`url.toString ()` converts an Url object to an URL-string. 
+Given an Url object `url`, `url.scheme` is a getter that returns the scheme of `url` as a string, or `null` if no scheme part is present (e.g. in relative URLs). 
+
+	new Url ('http://foo?search#baz').scheme
+	// => 'http'
+
+	new Url ('/abc/?').scheme
+	// => null
 
 
-### goto, join
+### url.toString (); url.toJSON ()
 
-### normalize, normalise
+Converts an Url object to an URL-string. 
 
-### force
 
-### resolve
+### url.goto (other)
 
-### tokens, [Symbol.iterator]
+Given an Url object `url`, `url.goto (other)` returns a new Url object.
+This is similar to `resolve`, but it also works with relative URLs.  
 
+If `other` is a string, it will be internally converted to an Url object, using the scheme of `url` as a parser setting. 
+
+	new Url ('/foo/bar') .goto ('baz/index.html') .toString ()
+	// => '/foo/baz/index.html'
+
+	new Url ('/foo/bar') .goto ('//host/path') .toString ()
+	// => '//host/path'
+
+
+
+### url.normalize (); url.normalise ()
+
+(Forthcoming)
+
+
+### url.force ()
+
+Forcibly convert an Url to a base URL. 
+The coercion follows the behaviour that is specified in the WhatWG URL Standard. 
+
+	new Url ('http:foo/bar') .force () .toString ()
+	// => 'http://foo/bar'
+
+	new Url ('file:d:/foo/bar') .force () .toString ()
+	// => 'file:///d:/foo/bar'
+
+
+### url.resolve (baseUrl)
+
+(Forthcoming)
+
+
+### url.tokens (); url \[Symbol.iterator] ()
+
+(Forthcoming)
 
 
 
