@@ -74,7 +74,7 @@ Given an URL-string `string` and optionally a parser configuration object `conf`
 
 The optional `conf` argument may be a string to specify a base scheme;
 or an object with three optional fields 
-`convertSlashes:boolean`, `driveLetters:boolean`, `baseScheme:string`. 
+`convertSlashes:boolean`, `detectDrive:boolean`, `baseScheme:string`. 
 
 
 ### fragment

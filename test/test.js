@@ -1,6 +1,6 @@
 "use strict"
-const core = require ('../lib/core')
-  , { letter, steal, force, join, normalize, url, print, parse, DRIVE, AUTH } = core
+const Url = require ('../lib')
+  , core = require ('../lib/core')
   , Tests = require ('./testset')
 
 const log = console.log.bind (console)
@@ -9,24 +9,17 @@ const log = console.log.bind (console)
 // Test 
 // ----
 
-function baseUrl (string, scheme) {
-  scheme = typeof scheme === 'string' ? scheme : ''
-  return normalize (force (url (string), scheme))
-}
-
-log (baseUrl ('asdf/foo'))
-
 function runtest (test) {
   if (typeof test !== 'object') return
   if (test.failure) return
   if (test.username || test.password) return
 
-  var base = baseUrl (test.base)
-  var scheme = base.length && base[0][0] === core.SCHEME ? base[0][1] : null
-  var input = url (test.input, scheme)
-  var resolved = normalize (force (join (base, input)))
+  var base = new Url (test.base)
+  var input = new Url (test.input, base.scheme)
+  var resolved = input .resolve (base) .force ()
+
   resolved = dropHostForDrive (resolved)
-  var href = print (resolved)
+  var href = String (resolved)
 
   var testData = 
     //{ testCase: test
@@ -38,7 +31,7 @@ function runtest (test) {
     , resolvedHref: href
     }
 
-  Tests.assert (href === test.href, 'equal href', testData )
+  Tests.assert (href === test.href, 'equal href', testData)
 }
 
 
@@ -46,10 +39,13 @@ function runtest (test) {
 // and so, I do it here to make the failing tests pass
 
 function dropHostForDrive (url) {
+  const r = new Url ()
+  url = url._parts
   if (url && url.some (_ => _[0] === core.DRIVE)) {
-    return url.map (_ => _[0] === core.AUTH ? [AUTH, ''] : _)
+    r._parts = url.map (_ => _[0] === core.AUTH ? [core.AUTH, ''] : _)
   }
-  return url
+  else r._parts = url
+  return r
 }
 
 var testSet = new Tests (require ('./urltestdata.json'))
