@@ -79,7 +79,8 @@ or an object with three optional fields
 
 ### url.fragment
 
-Given an Url object `url`, `fragment` is a getter that returns the fragment part of `url` as a string, or `null` if no such part is present. 
+Given an Url object `url`, `url.fragment` is a getter that returns the
+fragment part of `url` as a string, or `null` if no such part is present. 
 
 	new Url ('http://foo#baz').fragment
 	// => 'baz'
@@ -93,7 +94,8 @@ Given an Url object `url`, `fragment` is a getter that returns the fragment part
 
 ### url.query
 
-Given an Url object `url`, `url.query` is a getter that returns the query part of `url` as a string, or `null` if no such part is present. 
+Given an Url object `url`, `url.query` is a getter that returns the
+query part of `url` as a string, or `null` if no such part is present. 
 
 	new ReUrl ('http://foo?search#baz').query
 	// => 'search'
@@ -107,7 +109,8 @@ Given an Url object `url`, `url.query` is a getter that returns the query part o
 
 ### url.scheme
 
-Given an Url object `url`, `url.scheme` is a getter that returns the scheme of `url` as a string, or `null` if no scheme part is present (e.g. in relative URLs). 
+Given an Url object `url`, `url.scheme` is a getter that returns the
+scheme of `url` as a string, or `null` if no scheme part is present (e.g. in relative URLs). 
 
 	new Url ('http://foo?search#baz').scheme
 	// => 'http'
@@ -123,8 +126,11 @@ Converts an Url object to an URL-string.
 
 ### url.goto (other)
 
-Given an Url object `url`, `url.goto (other)` returns a new Url object.
-This is similar to `resolve`, but it also works with relative URLs.  
+Given an Url object `url`, `url.goto (other)` returns a new Url object
+by 'refining' `url` with another url `other`. 
+
+Goto does not do additional normalization. If you need normalization, 
+use `url.goto (other) .normalize ()`.
 
 If `other` is a string, it will be internally converted to an Url object, using the scheme of `url` as a parser setting. 
 
@@ -134,6 +140,8 @@ If `other` is a string, it will be internally converted to an Url object, using 
 	new Url ('/foo/bar') .goto ('//host/path') .toString ()
 	// => '//host/path'
 
+	new Url ('http://foo/bar/baz/') .goto ('./../bee') .toString ()
+	// => 'http://foo/bar/baz/./../bee'
 
 
 ### url.normalize (); url.normalise ()
