@@ -1,7 +1,7 @@
 Re-URL
 ======
 
-Relative (and absolute, too!) URL parser and manipulation library.
+Relative (and absolute) URL parser and manipulation library.
 
 (Some work still in progress.)
 
@@ -41,104 +41,128 @@ The key operations on URLs are a lot like merging / zipping ordered lists.
 Public API
 ----------
 
-The public API exposes a single constructor, `Url`. 
-All methods on `Url` objects are immutable. 
+The public API exposes a single constructor, `ReUrl`. 
+All methods on `ReUrl` objects are immutable. 
+
+In the documentation below:
+
+- An **URL** is the abstract, mathematical entity;
+  a sequence of tokens as described above. 
+- An **URL-string**, is a string representation of an URL. 
+- A **ReUrl object**, is a re-url object representing an URL. 
 
 
-### Constructor: new Url (string, conf)
+### Constructor: new ReUrl (string, conf)
 
-Given an URL-string `string` and optionally a parser configuration object `conf`,
-`new Url (string, conf)` returns a new Url object.  
+Given a string `string` and optionally a parser configuration object `conf`,
+`new ReUrl (string, conf)` returns a new ReUrl object by parsing the string as an URL-string.  
 
 The optional `conf` argument may be a string to specify a base scheme;
 or an object with three optional fields 
 `convertSlashes:boolean`, `detectDrive:boolean`, `baseScheme:string`. 
 
 
-### Constructor: new Url (url)
+### Constructor: new ReUrl (url)
 
-Given an Url object `url`, `new Url (url)` returns a new Url object
+Given a ReUrl object `url`, `new ReUrl (url)` returns a new ReUrl object
 that is equivalent to `url`. 
 
 
-### url.fragment
+### url.scheme
 
-Given an Url object `url`, `url.fragment` is a getter that returns the
-fragment part of `url` as a string, or `null` if no such part is present. 
+Given a ReUrl object `url`, `url.scheme` is a getter that returns the
+scheme of `url` as a string, or `null` if no scheme part is present (e.g. in relative URLs). 
 
-	new Url ('http://foo#baz').fragment
-	// => 'baz'
+	new ReUrl ('http://foo?search#baz').scheme
+	// => 'http'
 
-	new Url ('/abc/#').fragment
-	// => ''
-
-	new Url ('/abc/').fragment
+	new ReUrl ('/abc/?').scheme
 	// => null
+
+
+### url.path
+
+Given a ReUrl object `url`, `url.path` is a getter that returns a new
+ReUrl object consisting of only the path components of `url`, or
+`null` if no such components are present. 
+
+	new ReUrl ('http://foo#baz').path
+	// => null
+
+	new ReUrl ('http://foo/bar/file#baz') .path .toString ()
+	// '/bar/file'
+
+	new ReUrl ('../foo/bar/file#baz') .path .toString ()
+	// '../foo/bar/file'
 
 
 ### url.query
 
-Given an Url object `url`, `url.query` is a getter that returns the
+Given a ReUrl object `url`, `url.query` is a getter that returns the
 query part of `url` as a string, or `null` if no such part is present. 
 
 	new ReUrl ('http://foo?search#baz').query
 	// => 'search'
 
-	new Url ('/abc/?').query
+	new ReUrl ('/abc/?').query
 	// => ''
 
-	new Url ('/abc/').query
+	new ReUrl ('/abc/').query
 	// => null
 
 
-### url.scheme
+### url.fragment
 
-Given an Url object `url`, `url.scheme` is a getter that returns the
-scheme of `url` as a string, or `null` if no scheme part is present (e.g. in relative URLs). 
+Given a ReUrl object `url`, `url.fragment` is a getter that returns the
+fragment part of `url` as a string, or `null` if no such part is present. 
 
-	new Url ('http://foo?search#baz').scheme
-	// => 'http'
+	new ReUrl ('http://foo#baz').fragment
+	// => 'baz'
 
-	new Url ('/abc/?').scheme
+	new ReUrl ('/abc/#').fragment
+	// => ''
+
+	new ReUrl ('/abc/').fragment
 	// => null
 
 
-### url.toString (); url.toJSON ()
+### url.toString (); url.toJSON (); url.valueOf ()
 
-Converts an Url object to an URL-string. 
+Converts a ReUrl object to an URL-string. 
 
 
 ### url.goto (other)
 
-Given an Url object `url`, `url.goto (other)` returns a new Url object
-by 'refining' `url` with `other`, where other may be a string or an Url object. 
+Given a ReUrl object `url`, `url.goto (other)` returns a new ReUrl object
+by 'refining' `url` with `other`, where other may be a string or a ReUrl object. 
+If `other` is a string, it will be internally converted to a ReUrl object,
+using the scheme of `url` as a parser setting. 
 
-Goto does not do additional normalization. If you need normalization, 
-use `url.goto (other) .normalize ()`.
-
-If `other` is a string, it will be internally converted to an Url object, using the scheme of `url` as a parser setting. 
-
-	new Url ('/foo/bar') .goto ('baz/index.html') .toString ()
+	new ReUrl ('/foo/bar') .goto ('baz/index.html') .toString ()
 	// => '/foo/baz/index.html'
 
-	new Url ('/foo/bar') .goto ('//host/path') .toString ()
+	new ReUrl ('/foo/bar') .goto ('//host/path') .toString ()
 	// => '//host/path'
 
-	new Url ('http://foo/bar/baz/') .goto ('./../bee') .toString ()
+	new ReUrl ('http://foo/bar/baz/') .goto ('./../bee') .toString ()
 	// => 'http://foo/bar/baz/./../bee'
 
 
 ### url.normalize (); url.normalise ()
 
-Given an Url object `url`, `url.normalize ()` returns a new Url object by
+Given a ReUrl object `url`, `url.normalize ()` returns a new ReUrl object by
 normalizing `url`. Normalization involves, a.o. 
 interpreting `.` and `..` segments within the path and removing the default port
 and empty user/password info from the authority of `url`. 
 
+	new ReUrl ('http://foo/bar/baz/./../bee') .normalize () .toString ()
+	// => 'http://foo/bar/bee'
+	
+	
 
-### url.resolve (baseUrl)
+### url.resolve (base)
 
-Equivalent to `new Url (baseUrl) .force () .goto (url) .normalize ()`
+Equivalent to `new Url (base) .force () .goto (url) .normalize ()`
 
 
 ### url.tokens (); url \[Symbol.iterator] ()
@@ -148,7 +172,7 @@ Equivalent to `new Url (baseUrl) .force () .goto (url) .normalize ()`
 
 ### url.force ()
 
-Forcibly convert an Url to a base URL. 
+Forcibly convert an URL to a base URL. 
 The coercion follows the behaviour that is specified in the WhatWG URL Standard. 
 
 - For URLs that have a scheme being one of `http`, `https`, `ws`, `wss`,
@@ -161,17 +185,17 @@ calling `force` on any of the following URLs, will result in `http://foo/bar`.
   - `http://foo/bar`
   - `http:///foo/bar`
 
-- In file URLs, windows drive letters are detected. 
+- In file URLs, windows drive letters will be detected and inserted:
 If the authority looks like a drive-letter, then it is converted to a DRIVE token. 
 Otherwise, if the first path segment looks like a drive letter, then
 it is converted to a DRIVE token. 
 
 Examples:
 
-	new Url ('http:foo/bar') .force () .toString ()
+	new ReUrl ('http:foo/bar') .force () .toString ()
 	// => 'http://foo/bar'
 
-	new Url ('file:d:/foo/bar') .force () .toString ()
+	new ReUrl ('file:d:/foo/bar') .force () .toString ()
 	// => 'file:///d:/foo/bar'
 
 
