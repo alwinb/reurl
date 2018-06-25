@@ -25,6 +25,7 @@ function runtest (test) {
     
 
   resolved = dropHostForDrive (resolved)
+  //resolved = dropEmpties (resolved)
   var href = String (resolved)
 
   var testData = 
@@ -66,9 +67,31 @@ function dropHostForDrive (url) {
 
 
 function dropEmpties (url) {
+  // Hmmmm think this through..
+  // esp. relating it to 'resolve' and join. 
   if (url.scheme === 'file') {
-    // TODO, drop all initial empty DIRs from file URLs. 
-    const r = new URL ()
+    const parts = []
+    let dirSeen = false
+    
+    for (let i=0, l=url._parts.length; i<l; i++) {
+      let a = url._parts[i]
+      let t = a[0]
+      
+      if (!dirSeen) {
+        if (t === core.DRIVE)
+          parts.push (dirSeen = a)
+        else if (t === core.DIR && a[1] !== '')
+          parts.push (dirSeen = a)
+        else
+          parts.push (a)
+      }
+      else
+        parts.push (a)
+    }
+    
+    const r = new Url ()
+    r._parts = parts
+    return r
   }
   return url
 }

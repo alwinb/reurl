@@ -1,9 +1,9 @@
 Re-URL
 ======
 
-(Some work still in progress.)
+Relative (and absolute, too!) URL parser and manipulation library.
 
-A second attempt at a small, properly structured URL parser. 
+(Some work still in progress.)
 
 Features:
 
@@ -33,30 +33,8 @@ In addition URLs are subject to the following conditions:
   - if an URL has an AUTH or a DRIVE token, and it has a DIR or a FILE token, then it also has a ROOT token. 
 
 
-Thus, URLs are a special case of ordered lists, where the ordering reflects the hierarchical structure of an URL string. 
+Thus, URLs are a special case of ordered lists, where the ordering reflects the hierarchical structure of the URL. 
 The key operations on URLs are a lot like merging / zipping ordered lists. 
-
-
-
-Architecture
-------------
-
-The core of the library uses, comparatively, a very simple parser that 
-produces a sequence of tokens, as per the above. Operations such as resolution
-and coercion to base URLs are implemented as operations on this sequences of 
-tokens. The quintessential operation on URLs is 'join' (or, 'goto'), which is
-the basis for the resolve operation.  
-The operations implemented in the core library are:
-
-- url (configurable parser)
-- parse (naive parser)
-- print (convert to string)
-- join (aka. goto)
-- force (coerce to a base URL, may use steal)
-- normalize (remove superfluous `.` and `..` tokens, a.o.)
-- resolve (resolves an URL against a base URL)
-- steal (attempt to 'steal' a missing AUTH token from the first nonempty DIR or FILE token)
-- letter (detects if an URL has a windows drive-letter and create a DRIVE token for it)
 
 
 
@@ -75,6 +53,12 @@ Given an URL-string `string` and optionally a parser configuration object `conf`
 The optional `conf` argument may be a string to specify a base scheme;
 or an object with three optional fields 
 `convertSlashes:boolean`, `detectDrive:boolean`, `baseScheme:string`. 
+
+
+### Constructor: new Url (url)
+
+Given an Url object `url`, `new Url (url)` returns a new Url object
+that is equivalent to `url`. 
 
 
 ### url.fragment
@@ -127,7 +111,7 @@ Converts an Url object to an URL-string.
 ### url.goto (other)
 
 Given an Url object `url`, `url.goto (other)` returns a new Url object
-by 'refining' `url` with another url `other`. 
+by 'refining' `url` with `other`, where other may be a string or an Url object. 
 
 Goto does not do additional normalization. If you need normalization, 
 use `url.goto (other) .normalize ()`.
@@ -146,6 +130,19 @@ If `other` is a string, it will be internally converted to an Url object, using 
 
 ### url.normalize (); url.normalise ()
 
+Given an Url object `url`, `url.normalize ()` returns a new Url object by
+normalizing `url`. Normalization involves, a.o. 
+interpreting `.` and `..` segments within the path and removing the default port
+and empty user/password info from the authority of `url`. 
+
+
+### url.resolve (baseUrl)
+
+Equivalent to `new Url (baseUrl) .force () .goto (url) .normalize ()`
+
+
+### url.tokens (); url \[Symbol.iterator] ()
+
 (Forthcoming)
 
 
@@ -154,6 +151,23 @@ If `other` is a string, it will be internally converted to an Url object, using 
 Forcibly convert an Url to a base URL. 
 The coercion follows the behaviour that is specified in the WhatWG URL Standard. 
 
+- For URLs that have a scheme being one of `http`, `https`, `ws`, `wss`,
+`ftp` or `gopher` and an absent or empty authority, the authority component
+will be 'stolen' from the first nonempty component of the path. For example,
+calling `force` on any of the following URLs, will result in `http://foo/bar`. 
+
+  - `http:foo/bar`
+  - `http:/foo/bar`
+  - `http://foo/bar`
+  - `http:///foo/bar`
+
+- In file URLs, windows drive letters are detected. 
+If the authority looks like a drive-letter, then it is converted to a DRIVE token. 
+Otherwise, if the first path segment looks like a drive letter, then
+it is converted to a DRIVE token. 
+
+Examples:
+
 	new Url ('http:foo/bar') .force () .toString ()
 	// => 'http://foo/bar'
 
@@ -161,20 +175,25 @@ The coercion follows the behaviour that is specified in the WhatWG URL Standard.
 	// => 'file:///d:/foo/bar'
 
 
-### url.resolve (baseUrl)
+Architectural notes
+-------------------
 
-(Forthcoming)
+The core of the library uses, comparatively, a very simple parser that 
+produces a sequence of tokens. Operations such as resolution
+and coercion to base URLs are implemented as operations on these sequences of 
+tokens. The quintessential operation on URLs is 'join' (or, 'goto'), which is
+the basis for the resolve operation. This operation can be elegantly expressed
+as a zip/ merge like operation on sequences of ordered URL tokens. 
 
+The operations implemented in the core library `/lib/core.js` are:
 
-### url.tokens (); url \[Symbol.iterator] ()
-
-(Forthcoming)
-
-
-
-
-
-
-
-
+- url (configurable parser)
+- parse (naive parser)
+- print (convert to string)
+- join (aka. goto)
+- force (coerce to a base URL, may use steal)
+- normalize (remove superfluous `.` and `..` tokens, a.o.)
+- resolve (resolves an URL against a base URL)
+- steal (attempt to 'steal' a missing AUTH token from the first nonempty DIR or FILE token)
+- letter (detects if an URL has a windows drive-letter and creates a DRIVE token for it)
 
