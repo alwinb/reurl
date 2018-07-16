@@ -47,7 +47,7 @@ function runtest (test) {
 function normalizeAuth (url) {
   if (url.scheme === 'file') return url
   const r = new Url ()
-  r._parts = url._parts.map (_ => _[0] === core.AUTH ? [core.AUTH, auth.print ( auth.normalize ( auth.parse (_[1]), url.scheme )) ] : _)
+  r._tokens = url._tokens.map (_ => _[0] === core.AUTH ? [core.AUTH, auth.print ( auth.normalize ( auth.parse (_[1]), url.scheme )) ] : _)
   return r
 }
 
@@ -57,11 +57,11 @@ function normalizeAuth (url) {
 
 function dropHostForDrive (url) {
   const r = new Url ()
-  url = url._parts
+  url = url._tokens
   if (url && url.some (_ => _[0] === core.DRIVE)) {
-    r._parts = url.map (_ => _[0] === core.AUTH ? [core.AUTH, ''] : _)
+    r._tokens = url.map (_ => _[0] === core.AUTH ? [core.AUTH, ''] : _)
   }
-  else r._parts = url
+  else r._tokens = url
   return r
 }
 
@@ -73,8 +73,8 @@ function dropEmpties (url) {
     const parts = []
     let dirSeen = false
     
-    for (let i=0, l=url._parts.length; i<l; i++) {
-      let a = url._parts[i]
+    for (let i=0, l=url._tokens.length; i<l; i++) {
+      let a = url._tokens[i]
       let t = a[0]
       
       if (!dirSeen) {
@@ -90,7 +90,7 @@ function dropEmpties (url) {
     }
     
     const r = new Url ()
-    r._parts = parts
+    r._tokens = parts
     return r
   }
   return url

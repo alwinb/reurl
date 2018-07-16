@@ -7,11 +7,10 @@ Relative (and absolute) URL parser and manipulation library.
 
 Features:
 
-* A small code base. 
-* Support for relative URLs. 
+* Small code base. 
+* Supports working with relative URLs. 
 * Optional coercion to base URLs as defined in the [WhatWG URL Standard][1]. 
-* Optional support for Windows drive letters. 
-* Optional support for backslash separators. 
+* Configurable support for Windows drive letters and backslash separators. 
 
 [1]: https://url.spec.whatwg.org/
 
@@ -131,6 +130,23 @@ fragment part of `url` as a string, or `null` if no such part is present.
 Converts a ReUrl object to an URL-string. 
 
 
+### url.toArray ()
+
+Returns an Array representation of url, modeling the sequence of URL tokens as described in the Theory section above. 
+(Note, the actual format of the tokens returned is still in flux.)
+
+	new ReUrl ('http://example.com/foo/bar/baz?q#h') .toArray ()
+	// => 
+	// [ [ 'scheme', 'http' ],
+	//   [ 'auth', 'example.com' ],
+	//   [ 'path-root', '' ],
+	//   [ 'dir', 'foo' ],
+	//   [ 'dir', 'bar' ],
+	//   [ 'file', 'baz' ],
+	//   [ 'query', 'q' ],
+	//   [ 'fragment', 'h' ] ]
+
+
 ### url.goto (other)
 
 Given a ReUrl object `url`, `url.goto (other)` returns a new ReUrl object
@@ -158,16 +174,10 @@ and empty user/password info from the authority of `url`.
 	new ReUrl ('http://foo/bar/baz/./../bee') .normalize () .toString ()
 	// => 'http://foo/bar/bee'
 	
-	
 
 ### url.resolve (base)
 
 Equivalent to `new Url (base) .force () .goto (url) .normalize ()`
-
-
-### url.tokens (); url \[Symbol.iterator] ()
-
-(Forthcoming)
 
 
 ### url.force ()
@@ -177,7 +187,7 @@ The coercion follows the behaviour that is specified in the WhatWG URL Standard.
 
 - For URLs that have a scheme being one of `http`, `https`, `ws`, `wss`,
 `ftp` or `gopher` and an absent or empty authority, the authority component
-will be 'stolen' from the first nonempty component of the path. For example,
+will be 'stolen from the first nonempty path segement'. For example,
 calling `force` on any of the following URLs, will result in `http://foo/bar`. 
 
   - `http:foo/bar`
