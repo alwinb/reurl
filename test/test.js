@@ -13,16 +13,10 @@ const log = console.log.bind (console)
 function runtest (test) {
   if (typeof test !== 'object') return
   if (test.failure) return
-  // if (test.username || test.password) return
 
-  var base = new Url (test.base)
-  var input = new Url (test.input, base.scheme)
+  var base = dropEmpties (new Url (test.base))
+  var input = dropEmpties (new Url (test.input, base.scheme), base.scheme)
   var resolved = input .resolve (base) .force ()
-  
-  // Test auth
-  if (resolved.scheme !== 'file') 
-    resolved = normalizeAuth (resolved)
-    
 
   resolved = dropHostForDrive (resolved)
   //resolved = dropEmpties (resolved)
@@ -42,16 +36,6 @@ function runtest (test) {
 }
 
 
-// This is work in progress, and as such not yet part of index/ core
-
-function normalizeAuth (url) {
-  if (url.scheme === 'file') return url
-  const r = new Url ()
-  r._tokens = url._tokens.map (_ => _[0] === core.AUTH ? [core.AUTH, auth.print ( auth.normalize ( auth.parse (_[1]), url.scheme )) ] : _)
-  return r
-}
-
-
 // This is functionality that I am not sure I want in the core lib,
 // and so, I do it here to make the failing tests pass
 
@@ -59,17 +43,17 @@ function dropHostForDrive (url) {
   const r = new Url ()
   url = url._tokens
   if (url && url.some (_ => _[0] === core.DRIVE)) {
-    r._tokens = url.map (_ => _[0] === core.AUTH ? [core.AUTH, ''] : _)
+    r._tokens = url.map (_ => _[0] === core.AUTH ? [core.AUTH, auth.parse('')] : _)
   }
   else r._tokens = url
   return r
 }
 
 
-function dropEmpties (url) {
+function dropEmpties (url, scheme) {
   // Hmmmm think this through..
   // esp. relating it to 'resolve' and join. 
-  if (url.scheme === 'file') {
+  if (url.scheme === 'file' || (url.scheme == null && scheme === 'file')) {
     const parts = []
     let dirSeen = false
     
@@ -80,8 +64,9 @@ function dropEmpties (url) {
       if (!dirSeen) {
         if (t === core.DRIVE)
           parts.push (dirSeen = a)
-        else if (t === core.DIR && a[1] !== '')
-          parts.push (dirSeen = a)
+        else if (t === core.DIR) {
+          if (a[1] !== '') parts.push (dirSeen = a)
+        }
         else
           parts.push (a)
       }
