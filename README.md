@@ -23,7 +23,7 @@ The library is based on a simple theory of URLs, as follows.
 An **URL** is a sequence of tokens where tokens are tuples (type, value), where
 
   - type is taken from the set { SCHEME, AUTH, DRIVE, ROOT, DIR, FILE, QUERY, FRAG } and
-  - value is a string. 
+  - if type is AUTH then value is an **Authority**, otherwise value is a string.
 
 In addition URLs are subject to the following conditions:
 
@@ -31,10 +31,14 @@ In addition URLs are subject to the following conditions:
   - tokens are ordered by type according to SCHEME < AUTH < DRIVE < ROOT < DIR < FILE < QUERY < FRAG, and
   - if an URL has an AUTH or a DRIVE token, and it has a DIR or a FILE token, then it also has a ROOT token. 
 
+An **Authority** is a named tuple (username, password, hostname, port) where
 
-Thus, URLs are a special case of ordered lists, where the ordering reflects the hierarchical structure of the URL. 
+  - hostname is a string
+  - username, password and port are either undefined or a string,
+  - if the password is a string, then so is the username. 
+
+By this definition, URLs are a special case of ordered lists, where the ordering reflects the hierarchical structure of the URL. 
 The key operations on URLs are a lot like merging / zipping ordered lists. 
-
 
 
 Public API
@@ -48,7 +52,7 @@ In the documentation below:
 - An **URL** is the abstract, mathematical entity;
   a sequence of tokens as described above. 
 - An **URL-string**, is a string representation of an URL. 
-- A **ReUrl object**, is a re-url object representing an URL. 
+- A **ReUrl object**, is a javascript ReUrl object representation of an URL. 
 
 
 ### Constructor: new ReUrl (string, conf)
@@ -63,14 +67,13 @@ or an object with three optional fields
 
 ### Constructor: new ReUrl (url)
 
-Given a ReUrl object `url`, `new ReUrl (url)` returns a new ReUrl object
-that is equivalent to `url`. 
+Given a ReUrl object `url`, `new ReUrl (url)` returns a new ReUrl object that represents the same URL. 
 
 
 ### url.scheme
 
-Given a ReUrl object `url`, `url.scheme` is a getter that returns the
-scheme of `url` as a string, or `null` if no scheme part is present (e.g. in relative URLs). 
+A getter that returns the scheme of `url` as a string,
+or `null` if no scheme part is present (e.g. in relative URLs). 
 
 	new ReUrl ('http://foo?search#baz').scheme
 	// => 'http'
@@ -81,9 +84,8 @@ scheme of `url` as a string, or `null` if no scheme part is present (e.g. in rel
 
 ### url.path
 
-Given a ReUrl object `url`, `url.path` is a getter that returns a new
-ReUrl object consisting of only the path components of `url`, or
-`null` if no such components are present. 
+A getter that returns a new ReUrl object consisting of only 
+the path components of `url` or `null` if no such components are present. 
 
 	new ReUrl ('http://foo#baz').path
 	// => null
@@ -97,8 +99,8 @@ ReUrl object consisting of only the path components of `url`, or
 
 ### url.query
 
-Given a ReUrl object `url`, `url.query` is a getter that returns the
-query part of `url` as a string, or `null` if no such part is present. 
+A getter that returns the query part of `url` as a string,
+or `null` if no such part is present. 
 
 	new ReUrl ('http://foo?search#baz').query
 	// => 'search'
@@ -112,8 +114,8 @@ query part of `url` as a string, or `null` if no such part is present.
 
 ### url.fragment
 
-Given a ReUrl object `url`, `url.fragment` is a getter that returns the
-fragment part of `url` as a string, or `null` if no such part is present. 
+A getter that returns the fragment part of `url` as a string, 
+or `null` if no such part is present. 
 
 	new ReUrl ('http://foo#baz').fragment
 	// => 'baz'
@@ -149,8 +151,8 @@ Returns an Array representation of url, modeling the sequence of URL tokens as d
 
 ### url.goto (other)
 
-Given a ReUrl object `url`, `url.goto (other)` returns a new ReUrl object
-by 'refining' `url` with `other`, where other may be a string or a ReUrl object. 
+Returns a new ReUrl object by 'refining' `url` with `other`, 
+where other may be a string or a ReUrl object. 
 If `other` is a string, it will be internally converted to a ReUrl object,
 using the scheme of `url` as a parser setting. 
 
@@ -166,10 +168,9 @@ using the scheme of `url` as a parser setting.
 
 ### url.normalize (); url.normalise ()
 
-Given a ReUrl object `url`, `url.normalize ()` returns a new ReUrl object by
-normalizing `url`. Normalization involves, a.o. 
-interpreting `.` and `..` segments within the path and removing the default port
-and empty user/password info from the authority of `url`. 
+Returns a new ReUrl object by normalizing `url`. 
+This interprets a.o. `.` and `..` segments within the path ans removes default ports
+and trivial usernames/ passwords from the authority of `url`. 
 
 	new ReUrl ('http://foo/bar/baz/./../bee') .normalize () .toString ()
 	// => 'http://foo/bar/bee'
@@ -177,7 +178,7 @@ and empty user/password info from the authority of `url`.
 
 ### url.resolve (base)
 
-Equivalent to `new Url (base) .force () .goto (url) .normalize ()`
+Equivalent to `new ReUrl (base) .force () .goto (url) .normalize ()`
 
 
 ### url.force ()
@@ -230,4 +231,3 @@ The operations implemented in the core library `/lib/core.js` are:
 - resolve (resolves an URL against a base URL)
 - steal (attempt to 'steal' a missing AUTH token from the first nonempty DIR or FILE token)
 - letter (detects if an URL has a windows drive-letter and creates a DRIVE token for it)
-
