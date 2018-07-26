@@ -2,7 +2,7 @@
 const Url = require ('../lib')
   , core = require ('../lib/core')
   , Tests = require ('./testset')
-  , auth = require ('../lib/auth')
+  , auth = core.auth
 
 const log = console.log.bind (console)
 
@@ -16,7 +16,7 @@ function runtest (test) {
 
   var base = dropEmpties (new Url (test.base))
   var input = dropEmpties (new Url (test.input, base.scheme), base.scheme)
-  var resolved = input .resolve (base) .force ()
+  var resolved = input .resolve (base) .force () .normalize ()
 
   resolved = dropHostForDrive (resolved)
   //resolved = dropEmpties (resolved)
@@ -55,13 +55,13 @@ function dropEmpties (url, scheme) {
   // esp. relating it to 'resolve' and join. 
   if (url.scheme === 'file' || (url.scheme == null && scheme === 'file')) {
     const parts = []
-    let dirSeen = false
+    let dirSeen = false, root = null
     
     for (let i=0, l=url._tokens.length; i<l; i++) {
       let a = url._tokens[i]
       let t = a[0]
-      
-      if (!dirSeen) {
+      if (t === core.ROOT) root = a
+      if (root && !dirSeen) {
         if (t === core.DRIVE)
           parts.push (dirSeen = a)
         else if (t === core.DIR) {
