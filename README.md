@@ -1,16 +1,15 @@
 Re-URL
 ======
 
-Relative (and absolute) URL parser and manipulation library.
+Absolute and Relative URL parser and manipulation library.
 
-(Some work still in progress.)
-
-Features:
+(Getting there...)
 
 * Small code base. 
 * Supports working with relative URLs. 
+* Supports working with non-normalized URLs. 
+* Optionaland configurable support for Windows drive letters and backslash separators. 
 * Optional coercion to base URLs as defined in the [WhatWG URL Standard][1]. 
-* Configurable support for Windows drive letters and backslash separators. 
 
 [1]: https://url.spec.whatwg.org/
 
@@ -44,15 +43,7 @@ The key operations on URLs are a lot like merging / zipping ordered lists.
 API
 ---
 
-The library exposes a single constructor, `ReUrl`. 
-All methods on `ReUrl` objects are immutable. 
-
-In the documentation below:
-
-- An **URL** is the abstract, mathematical entity;
-  a sequence of tokens as described above. 
-- An **URL-string**, is a string representation of an URL. 
-- A **ReUrl object**, is a javascript ReUrl object representation of an URL. 
+The library exposes a single `ReUrl` class. 
 
 
 ### Constructors
@@ -90,6 +81,8 @@ constituents as strings, or `null` if they are not present. (See below for detai
 - url.root
 - url.drive
 - url.file
+- url.query
+- url.fragment
 
 
 ### Adding and modifying URL components
@@ -100,8 +93,7 @@ The methods do not mutate `url` but return new ReUrl objects insted.
 
 - url.withScheme (scheme)
 - url.withCredentials (username [, password])
-- url.withHost (host [,port]) // alias withAuthority
-- url.withAuthority (host [,port])
+- url.withHost (host [,port]) // aka. withAuthority
 - url.withPort (port)
 - url.withDrive (drive)
 - url.withRoot ()
@@ -121,8 +113,7 @@ The methods do not mutate `url` but return new ReUrl objects insted.
 
 - url.dropScheme ()
 - url.dropCredentials ()
-- url.dropAuthority () // alias dropHost
-- url.dropHost ()
+- url.dropAuthority () // aka. dropHost
 - url.dropPort ()
 - url.dropDrive ()
 - url.dropRoot ()
@@ -136,8 +127,8 @@ would result in a malformed URL.
 
 ### Operations on URLs
 
-- goto (other)
-- normalize ()
+- goto (other_url) // aka. join
+- normalize () // aka. normalise
 - resolve ([other])
 - force ([other])
 - forceResolve ([other])
@@ -258,7 +249,7 @@ depends on the parser settings and/ or URL scheme.
 	new ReUrl ('/c:/foo/bar', 'file').drive
 	// => 'c:'
 
-	new ReUrl ('/c:/foo/bar', null).drive
+	new ReUrl ('/c:/foo/bar').drive
 	// => null
 
 
@@ -346,7 +337,7 @@ and trivial usernames/ passwords from the authority of `url`.
 Forcibly convert an URL to a base URL. 
 The coercion follows the behaviour that is specified in the WhatWG URL Standard. 
 
-- In `file` URLs without hostname, the hostname will be set to ''
+- In `file` URLs without hostname, the hostname will be set to `''`. 
 - For URLs that have a scheme being one of `http`, `https`, `ws`, `wss`,
 `ftp` or `gopher` and an absent or empty authority, the authority component
 will be 'stolen from the first nonempty path segement'. For example,
