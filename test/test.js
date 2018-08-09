@@ -10,29 +10,49 @@ const log = console.log.bind (console)
 // Test 
 // ----
 
-function runtest (test) {
-  if (typeof test !== 'object') return
-  if (test.failure) return
+const testSet = new Tests ('URL Webtests', require ('./urltestdata.json'), initTest)
 
-  var base = dropEmpties (new Url (test.base))
-  var input = dropEmpties (new Url (test.input, base.scheme), base.scheme)
+  . assert (test => { if (test)
+      Tests.assert (test.resolvedFailure === !!test.originalFailure, 'equal failure', test)
+    })
+
+  . assert (test => { if (test && !test.originalFailure) {
+      Tests.assert (test.resolvedHref === test.originalHref, 'equal href', test)
+      //Tests.assert (resolved.r === test.pathname, 'equal pathname', testData, test)
+    } })
+
+
+function initTest (test) {
+  if (typeof test !== 'object') return
+  //if (test.failure) return
+  var base = new Url (test.base) 
+  var input = new Url (test.input, base.scheme)
   var resolved = input .resolve (base) .force () .normalize ()
 
+  resolved = dropEmpties (resolved)
   resolved = dropHostForDrive (resolved)
-  //resolved = dropEmpties (resolved)
+
   var href = String (resolved)
+  var failure = !! resolved.error
 
   var testData = 
     //{ testCase: test
     //, parsedBase: base
     //, parsedInput: input
-    { originalBase: test.base
-    , originalInp: test.input
-    , originalHref: test.href
-    , resolvedHref: href
-    }
+    { testbase: test.base
+    , testinput: test.input
 
-  Tests.assert (href === test.href, 'equal href', testData)
+    , originalFailure: !!test.failure
+    , resolvedFailure: resolved.failure
+
+    , originalHref: test.href
+    , resolvedHref: resolved.href
+
+    //, resolved:resolved.toArray()
+    //, testPathname: test.pathname
+    //, pathName: resolved.pathname
+    }
+  return testData
 }
 
 
@@ -40,13 +60,11 @@ function runtest (test) {
 // and so, I do it here to make the failing tests pass
 
 function dropHostForDrive (url) {
-  const r = new Url ()
-  url = url._tokens
-  if (url && url.some (_ => _[0] === core.DRIVE)) {
-    r._tokens = url.map (_ => _[0] === core.AUTH ? [core.AUTH, auth.parse('')] : _)
-  }
-  else r._tokens = url
-  return r
+  const toks = url._tokens
+  if (toks.some (_ => _[0] === core.DRIVE))
+    return Url.fromArray (toks.map (_ => _[0] === core.AUTH ? [core.AUTH, auth.parse ('')] : _))
+  else
+    return url
 }
 
 
@@ -55,13 +73,14 @@ function dropEmpties (url, scheme) {
   // esp. relating it to 'resolve' and join. 
   if (url.scheme === 'file' || (url.scheme == null && scheme === 'file')) {
     const parts = []
-    let dirSeen = false, root = null
+    let dirSeen = false
+    let _root = null
     
     for (let i=0, l=url._tokens.length; i<l; i++) {
       let a = url._tokens[i]
       let t = a[0]
-      if (t === core.ROOT) root = a
-      if (root && !dirSeen) {
+      if (t === core.ROOT) _root = a
+      if (_root && !dirSeen) {
         if (t === core.DRIVE)
           parts.push (dirSeen = a)
         else if (t === core.DIR) {
@@ -73,14 +92,11 @@ function dropEmpties (url, scheme) {
       else
         parts.push (a)
     }
-    
-    const r = new Url ()
-    r._tokens = parts
-    return r
+    return Url.fromArray (parts)
   }
   return url
 }
 
 
-var testSet = new Tests (require ('./urltestdata.json'))
-testSet.run (runtest)
+
+testSet.run ()
