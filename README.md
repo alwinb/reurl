@@ -8,7 +8,7 @@ Absolute and Relative URL parser and manipulation library.
 * Small code base. 
 * Supports working with relative URLs. 
 * Supports working with non-normalized URLs. 
-* Optionaland configurable support for Windows drive letters and backslash separators. 
+* Optional and configurable support for Windows drive letters and backslash separators. 
 * Optional coercion to base URLs as defined in the [WhatWG URL Standard][1]. 
 
 [1]: https://url.spec.whatwg.org/
@@ -37,7 +37,7 @@ An **Authority** is a named tuple (_username_, _password_, _hostname_, _port_) w
   - if _password_ is a string, then _username_ is a string.  
 
 By this definition, URLs are a special case of ordered lists, where the ordering reflects the hierarchical structure of the URL. 
-The key operations on URLs are a lot like merging / zipping ordered lists. 
+The key operations on URLs are like merging / zipping ordered lists. 
 
 
 API
@@ -89,7 +89,7 @@ constituents as strings, or `null` if they are not present. (See below for detai
 
 To add to or change the values of URL components, 
 use the following methods.  
-The methods do not mutate `url` but return new ReUrl objects insted. 
+The methods do not mutate `url` but return new ReUrl objects instead. 
 
 - url.withScheme (scheme)
 - url.withCredentials (username [, password])
@@ -109,7 +109,7 @@ withCredentials and withHost throw a TypeError when username, resp. host is null
 
 To remove URL components from a ReUrl object, 
 use the following methods.  
-The methods do not mutate `url` but return new ReUrl objects insted. 
+The methods do not mutate `url` but return new ReUrl objects instead. 
 
 - url.dropScheme ()
 - url.dropCredentials ()
@@ -118,16 +118,20 @@ The methods do not mutate `url` but return new ReUrl objects insted.
 - url.dropDrive ()
 - url.dropRoot ()
 - url.dropFile ()
+- url.dropDirectory ()
 - url.dropQuery ()
 - url.dropFragment ()
 
-url.dropRoot () throws a TypeError if dropping the root token
+dropRoot throws a TypeError if dropping the root token
 would result in a malformed URL. 
+
+dropDirectory removes the _last_ directory component from the path, 
+without normalizing/ interpreting `./` or `../` components. 
 
 
 ### Operations on URLs
 
-- goto (other_url) // aka. join
+- goto (other) // aka. join
 - normalize () // aka. normalise
 - resolve ([other])
 - force ([other])
@@ -151,7 +155,7 @@ or `null` if no scheme part is present (e.g. in relative URLs).
 #### url.username
 
 A getter that returns the username of `url` as a string,
-or `null` if the URL has no authority or no credentials. 
+or `null` if the URL has no authority or credentials. 
 
 	new ReUrl ('http://joe@localhost').username
 	// => 'joe'
@@ -212,7 +216,7 @@ or `null` if no authority or port are present.
 
 A getter that returns a string `'/'` if `url` has an absolute path
 or `null` otherwise.  
-Note that (file) URLs may have a drive, but no root. 
+It is possible for file URLs to have a drive, but not a root. 
 
 	new ReUrl ('foo://localhost?q').root
 	// => null
@@ -309,8 +313,9 @@ Returns an Array representation of url, modeling the sequence of URL tokens as d
 
 Returns a new ReUrl object by 'refining' `url` with `other`, 
 where other may be a string or a ReUrl object. 
-If `other` is a string, it will be internally converted to a ReUrl object,
-using the scheme of `url` as a parser setting. 
+If `other` is a string, it will be parsed with the parser configuration
+of `url`. If `other` is a ReUrl object then its configuration will
+be passed along to the newly returned url. 
 
 	new ReUrl ('/foo/bar') .goto ('baz/index.html') .toString ()
 	// => '/foo/baz/index.html'
@@ -325,7 +330,7 @@ using the scheme of `url` as a parser setting.
 #### url.normalize (); url.normalise ()
 
 Returns a new ReUrl object by normalizing `url`. 
-This interprets a.o. `.` and `..` segments within the path ans removes default ports
+This interprets a.o. `.` and `..` segments within the path and removes default ports
 and trivial usernames/ passwords from the authority of `url`. 
 
 	new ReUrl ('http://foo/bar/baz/./../bee') .normalize () .toString ()
@@ -335,12 +340,12 @@ and trivial usernames/ passwords from the authority of `url`.
 #### url.force (base)
 
 Forcibly convert an URL to a base URL. 
-The coercion follows the behaviour that is specified in the WhatWG URL Standard. 
+The coercion follows the behavior that is specified in the WhatWG URL Standard. 
 
 - In `file` URLs without hostname, the hostname will be set to `''`. 
 - For URLs that have a scheme being one of `http`, `https`, `ws`, `wss`,
 `ftp` or `gopher` and an absent or empty authority, the authority component
-will be 'stolen from the first nonempty path segement'. For example,
+will be 'stolen from the first nonempty path segment'. For example,
 calling `force` on any of the following URLs, will result in `http://foo/bar`. 
 
   - `http:foo/bar`

@@ -10,20 +10,20 @@ const log = console.log.bind (console)
 // Test 
 // ----
 
-const testSet = new Tests ('URL Webtests', require ('./urltestdata.json'), initTest)
+const testSet = new Tests (require ('./urltestdata.json'), initTest)
 
   // . assert (test => { if (test)
   //     Tests.assert (test.resolvedFailure === !!test.originalFailure, 'equal failure', test)
   //   })
 
-  . assert (test => { if (test && !test.originalFailure) {
+  . add (test => { if (test && !test.originalFailure) {
       Tests.assert (test.resolvedHref === test.originalHref, 'equal href', test)
     } })
 
 
 function initTest (test) {
   if (typeof test !== 'object') return
-  var base = new Url (test.base) 
+  var base = new Url (test.base)
   var input = new Url (test.input, base.scheme)
   var resolved = input .forceResolve (base)
 
@@ -39,6 +39,9 @@ function initTest (test) {
 
     , originalHref: test.href
     , resolvedHref: resolved.href
+    
+    , parsedBase: base.toArray ()
+    , parsedInput: input.toArray ()
     }
   return testData
 }
