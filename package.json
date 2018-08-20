@@ -1,0 +1,31 @@
+{
+  "name": "reurl",
+  "version": "0.7.0",
+  "description": "URL manipulation library",
+  "main": "lib/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alwinb/re-url.git"
+  },
+  "keywords": [
+    "URL",
+    "relative URL",
+    "normalize",
+    "parser"
+  ],
+  "author": "Alwin Blok",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alwinb/re-url/issues"
+  },
+  "homepage": "https://github.com/alwinb/re-url#readme",
+  "dependencies": {
+    "wtf-8": "^1.0.1"
+  }
+}

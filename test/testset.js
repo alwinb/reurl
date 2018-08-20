@@ -1,17 +1,14 @@
 const log = console.log.bind(console)
 
-
 function AssertionFailure (message, data) {
   this.message = message
   this.data = data
 }
 
 
-
 class Tests {
 
-  constructor (name, tests, init) {
-    this.name = name
+  constructor (tests, init) {
     this.tests = tests
     this.init = init
     this.assertions = []
@@ -24,14 +21,12 @@ class Tests {
     }
   }
 
-  assert (fn) {
+  add (fn) {
     this.assertions.push (fn)
     return this
   }
 
   run () {
-    log('\n======== ' + this.name + ' ========')
-
     var fail = 0, pass = 0
 
     for (var i = 0, l = this.tests.length; i < l; i++) {
@@ -71,6 +66,5 @@ class Tests {
   }
 
 }
-
 
 module.exports = Tests
