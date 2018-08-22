@@ -93,7 +93,7 @@ The methods do not mutate `url` but return new ReUrl objects instead.
 
 - url.withScheme (scheme)
 - url.withCredentials (username [, password])
-- url.withHost (host [,port]) // aka. withAuthority
+- url.withHost (host [,port]) // aka. withAuthority, aka. withAuth
 - url.withPort (port)
 - url.withDrive (drive)
 - url.withRoot ()
@@ -113,7 +113,7 @@ The methods do not mutate `url` but return new ReUrl objects instead.
 
 - url.dropScheme ()
 - url.dropCredentials ()
-- url.dropAuthority () // aka. dropHost
+- url.dropAuthority () // aka. dropHost, aka. dropAuth
 - url.dropPort ()
 - url.dropDrive ()
 - url.dropRoot ()
