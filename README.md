@@ -37,7 +37,28 @@ An **Authority** is a named tuple (_username_, _password_, _hostname_, _port_) w
   - if _password_ is a string, then _username_ is a string.  
 
 By this definition, URLs are a special case of ordered lists, where the ordering reflects the hierarchical structure of the URL. 
-The key operations on URLs are like merging / zipping ordered lists. 
+This makes it relatively easy to define and implement the key operations on URLs. 
+
+The **type** of an URL (**type** url) is defined to be the type of its first token or **fragment** if the URL is empty. 
+The **type-bound prefix** (url1 **upto** _t_) is defined to be _the shortest prefix_ of url1 that contains all tokens of url1 with
+a type strictly smaller than _t_ and all **directory** tokens with a type weakly smaller than _t_. 
+
+The goto operation (url1 **goto** url2) is defined to return _the shortest URL_ that has 
+url1 **upto** (type of url2) as a prefix and url2 as a postfix. 
+
+The _nonstrict_ goto operation (url1 **goto'** url2) is defined to be (url1 **goto** url2') where 
+url' is obtained from url2 by removing its first token if it is a **scheme** token equal to the first token of url1, 
+and url2 otherwise
+
+Some properties:
+
+- type (url1 goto url2) is the least type of (type url1, type url2). 
+- (url1 goto url2) goto url3 = url1 goto (url2 goto url3). 
+- empty goto url2 = url2. 
+- url1 goto empty ≠ url1 in general (the fragment is dropped). 
+- similar for goto'. 
+- url2 is a postfix of (url1 goto url2) but not neccesarily of (url1 goto' url2).
+
 
 
 API
@@ -93,7 +114,7 @@ The methods do not mutate `url` but return new ReUrl objects instead.
 
 - url.withScheme (scheme)
 - url.withCredentials (username [, password])
-- url.withHost (host [,port]) // aka. withAuthority
+- url.withHost (host [,port]) // aka. withAuthority, aka. withAuth
 - url.withPort (port)
 - url.withDrive (drive)
 - url.withRoot ()
@@ -113,7 +134,7 @@ The methods do not mutate `url` but return new ReUrl objects instead.
 
 - url.dropScheme ()
 - url.dropCredentials ()
-- url.dropAuthority () // aka. dropHost
+- url.dropAuthority () // aka. dropHost, aka. dropAuth
 - url.dropPort ()
 - url.dropDrive ()
 - url.dropRoot ()
