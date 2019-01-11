@@ -1,23 +1,29 @@
-Re-URL
-======
+# Re-URL
 
-Absolute and Relative URL parser and manipulation library.
+[![NPM version][npm-image]][npm-url]
 
-(Getting there...)
+An URL parser and manipulation library. 
 
 * Small code base. 
-* Supports working with relative URLs. 
-* Supports working with non-normalized URLs. 
-* Optional and configurable support for Windows drive letters and backslash separators. 
-* Optional coercion to base URLs as defined in the [WhatWG URL Standard][1]. 
+* Relative URLs. 
+* Non-normalized URLs. 
+* Access to the 'parse tree' (a list of URL tokens). 
+* Goto, Normalize and Resolve operations. 
+* Windows drive letters (configurable). 
+* Backslash separators (configurable). 
+* [WhatWG][1] compliant coercion to base URLs. 
 
 [1]: https://url.spec.whatwg.org/
+[npm-image]: https://img.shields.io/npm/v/reurl.svg
+[npm-url]: https://npmjs.org/package/reurl
 
 
-Theory
-------
+## Theory
 
 The library is based on a simple theory of URLs, as follows. 
+
+
+### URLs
 
 An **URL** is a sequence of tokens where tokens are tuples (_type_, _value_), where
 
@@ -36,33 +42,43 @@ An **Authority** is a named tuple (_username_, _password_, _hostname_, _port_) w
   - _username_, _password_ and _port_ are either undefined or a string,
   - if _password_ is a string, then _username_ is a string.  
 
-By this definition, URLs are a special case of ordered lists, where the ordering reflects the hierarchical structure of the URL. 
-This makes it relatively easy to define and implement the key operations on URLs. 
 
-The **type** of an URL (**type** url) is defined to be the type of its first token or **fragment** if the URL is empty. 
-The **type-bound prefix** (url1 **upto** _t_) is defined to be _the shortest prefix_ of url1 that contains all tokens of url1 with
-a type strictly smaller than _t_ and all **directory** tokens with a type weakly smaller than _t_. 
+### Operations
 
-The goto operation (url1 **goto** url2) is defined to return _the shortest URL_ that has 
-url1 **upto** (type of url2) as a prefix and url2 as a postfix. 
+By the definition above, URLs are a special case of ordered lists, where 
+the ordering reflects the hierarchical structure of the URL. 
+This makes it relatively easy to define and implement the key operations on URLs, as follows:
 
-The _nonstrict_ goto operation (url1 **goto'** url2) is defined to be (url1 **goto** url2') where 
-url' is obtained from url2 by removing its first token if it is a **scheme** token equal to the first token of url1, 
-and url2 otherwise
+* The **type** of an URL (type _url_) is defined to be:
+  - **fragment** if _url_ is the empty URL.
+  - The type of its first token otherwise. 
+
+* The **type-limited prefix** (_url1_ upto _t_) is defined to be
+  - the _shortest_ prefix of _url1_ that contains
+    - all tokens of _url1_ with a type strictly smaller than _t_ and
+    - all **directory** tokens with a type weakly smaller than _t_. 
+
+* The **goto** operation (_url1_ goto _url2_) is defined to return:
+  - the _shortest_ URL that has _url1_ upto (type _url2_) as a prefix and _url2_ as a postfix. 
+
+* The **_nonstrict_ goto** operation (_url1_ goto' _url2_) is defined to be (_url1_ goto _url2'_) where
+  - _url2'_ is _url2_ with the **scheme** token removed if it equals the **scheme** token of _url1_, or _url2_ otherwise. 
+
+
+### Properties
 
 Some properties:
 
-- type (url1 goto url2) is the least type of (type url1, type url2). 
+- type (url1 goto url2) is the least type of {type url1, type url2}. 
 - (url1 goto url2) goto url3 = url1 goto (url2 goto url3). 
 - empty goto url2 = url2. 
-- url1 goto empty ≠ url1 in general (the fragment is dropped). 
+- url1 goto empty = url1 is **not** true in general (the fragment is dropped). 
 - similar for goto'. 
-- url2 is a postfix of (url1 goto url2) but not neccesarily of (url1 goto' url2).
+- url2 is a postfix of (url1 goto url2) but not necessarily of (url1 goto' url2).
 
 
 
-API
----
+## API
 
 The library exposes a single `ReUrl` class. 
 
@@ -73,7 +89,7 @@ Create new ReUrl objects by parsing an URL-string with an optional parser config
 or by aliasing an existing object. Here `conf` is a string (a base scheme), or a function from 
 a string (scheme) or null (schemeless) to an object `{ drive:boolean, backslashes:boolean }`. 
 
-- new ReUrl (string [, conf])
+- new ReUrl (string \[, conf])
 - new ReUrl (reurl)
 
 
@@ -85,8 +101,8 @@ All methods are equivalent except for toArray.
 - url.toString ()
 - url.valueOf ()
 - url.toJSON ()
-- url.toArray ()
 - url.href // getter
+- [url.toArray ()](#urltoarray-)
 
 
 ### Getters
@@ -94,16 +110,16 @@ All methods are equivalent except for toArray.
 A ReUrl object `url` has the following getters that return the corresponding
 constituents as strings, or `null` if they are not present. (See below for details). 
 
-- url.scheme
-- url.username
-- url.password
-- url.hostname
-- url.port
-- url.root
-- url.drive
-- url.file
-- url.query
-- url.fragment
+- [url.scheme](#urlscheme)
+- [url.username](#urlusername)
+- [url.password](#urlpassword)
+- [url.hostname](#urlhostname)
+- [url.port](#urlport)
+- [url.root](#urlroot)
+- [url.drive](#urldrive)
+- [url.file](#urlfile)
+- [url.query](#urlquery)
+- [url.fragment](#urlfragment)
 
 
 ### Adding and modifying URL components
@@ -113,8 +129,8 @@ use the following methods.
 The methods do not mutate `url` but return new ReUrl objects instead. 
 
 - url.withScheme (scheme)
-- url.withCredentials (username [, password])
-- url.withHost (host [,port]) // aka. withAuthority, aka. withAuth
+- url.withCredentials (username \[, password])
+- url.withHost (host \[,port]) // aka. withAuthority, aka. withAuth
 - url.withPort (port)
 - url.withDrive (drive)
 - url.withRoot ()
@@ -166,72 +182,95 @@ without normalizing/ interpreting `./` or `../` components.
 A getter that returns the scheme of `url` as a string,
 or `null` if no scheme part is present (e.g. in relative URLs). 
 
-	new ReUrl ('http://foo?search#baz').scheme
-	// => 'http'
+```javascript
+new ReUrl ('http://foo?search#baz').scheme
+// => 'http'
+```
 
-	new ReUrl ('/abc/?').scheme
-	// => null
-
+```javascript
+new ReUrl ('/abc/?').scheme
+// => null
+```
 
 #### url.username
 
 A getter that returns the username of `url` as a string,
 or `null` if the URL has no authority or credentials. 
 
-	new ReUrl ('http://joe@localhost').username
-	// => 'joe'
+```javascript
+new ReUrl ('http://joe@localhost').username
+// => 'joe'
+```
 
-	new ReUrl ('//host/abc').username
-	// => null
-
+```javascript
+new ReUrl ('//host/abc').username
+// => null
+```
 
 #### url.password
 
 A getter that returns the password of `url` as a string,
 or `null` if the URL has no authority, credentials or password. 
 
-	new ReUrl ('http://joe@localhost').password
-	// => null
+```javascript
+new ReUrl ('http://joe@localhost').password
+// => null
+```
 
-	new ReUrl ('http://host').password
-	// => null
+```javascript
+new ReUrl ('http://host').password
+// => null
+```
 
-	new ReUrl ('http://joe:pass@localhost').password
-	// => 'pass'
+```javascript
+new ReUrl ('http://joe:pass@localhost').password
+// => 'pass'
+```
 
-	new ReUrl ('http://joe:@localhost').password
-	// => ''
-
+```javascript
+new ReUrl ('http://joe:@localhost').password
+// => ''
+```
 
 #### url.hostname
 
 A getter that returns the hostname of `url` as a string,
 or `null` if no authority is present. 
 
-	new ReUrl ('http://localhost').hostname
-	// => 'localhost'
+```javascript
+new ReUrl ('http://localhost').hostname
+// => 'localhost'
+```
 
-	new ReUrl ('http:foo').hostname
-	// => null
+```javascript
+new ReUrl ('http:foo').hostname
+// => null
+```
 
-	new ReUrl ('/foo').hostname
-	// => null
-
+```javascript
+new ReUrl ('/foo').hostname
+// => null
+```
 
 #### url.port
 
 A getter that returns the port of `url`,
 or `null` if no authority or port are present. 
 
-	new ReUrl ('http://localhost:8080').port
-	// => 8080
+```javascript
+new ReUrl ('http://localhost:8080').port
+// => 8080
+```
 
-	new ReUrl ('foo://host:/foo').port
-	// => ''
+```javascript
+new ReUrl ('foo://host:/foo').port
+// => ''
+```
 
-	new ReUrl ('foo://host/foo').port
-	// => null
-
+```javascript
+new ReUrl ('foo://host/foo').port
+// => null
+```
 
 #### url.root
 
@@ -239,24 +278,35 @@ A getter that returns a string `'/'` if `url` has an absolute path
 or `null` otherwise.  
 It is possible for file URLs to have a drive, but not a root. 
 
-	new ReUrl ('foo://localhost?q').root
-	// => null
+```javascript
+new ReUrl ('foo://localhost?q').root
+// => null
+```
 
-	new ReUrl ('foo://localhost/').root
-	// => '/'
+```javascript
+new ReUrl ('foo://localhost/').root
+// => '/'
+```
 
-	new ReUrl ('foo/bar').root
-	// => null
+```javascript
+new ReUrl ('foo/bar').root
+// => null
+```
 
-	new ReUrl ('/foo/bar').root
-	// => '/'
+```javascript
+new ReUrl ('/foo/bar').root
+// => '/'
+```
 
-	new ReUrl ('file://c:').root
-	// => null
+```javascript
+new ReUrl ('file://c:').root
+// => null
+```
 
-	new ReUrl ('file://c:/').root
-	// => '/'
-
+```javascript
+new ReUrl ('file://c:/').root
+// => '/'
+```
 
 #### url.drive
 
@@ -265,50 +315,67 @@ or `null` if no drive is present.
 Note that the presence of drives
 depends on the parser settings and/ or URL scheme. 
 
-	new ReUrl ('file://c:').drive
-	// => 'c:'
+```javascript
+new ReUrl ('file://c:').drive
+// => 'c:'
+```
 
-	new ReUrl ('http://c:').drive
-	// => null
+```javascript
+new ReUrl ('http://c:').drive
+// => null
+```
 
-	new ReUrl ('/c:/foo/bar', 'file').drive
-	// => 'c:'
+```javascript
+new ReUrl ('/c:/foo/bar', 'file').drive
+// => 'c:'
+```
 
-	new ReUrl ('/c:/foo/bar').drive
-	// => null
-
+```javascript
+new ReUrl ('/c:/foo/bar').drive
+// => null
+```
 
 #### url.query
 
 A getter that returns the query part of `url` as a string,
 or `null` if no such part is present. 
 
-	new ReUrl ('http://foo?search#baz').query
-	// => 'search'
+```javascript
+new ReUrl ('http://foo?search#baz').query
+// => 'search'
+```
 
-	new ReUrl ('/abc/?').query
-	// => ''
+```javascript
+new ReUrl ('/abc/?').query
+// => ''
+```
 
-	new ReUrl ('/abc/').query
-	// => null
-
+```javascript
+new ReUrl ('/abc/').query
+// => null
+```
 
 #### url.fragment
 
 A getter that returns the fragment part of `url` as a string, 
 or `null` if no such part is present. 
 
-	new ReUrl ('http://foo#baz').fragment
-	// => 'baz'
+```javascript
+new ReUrl ('http://foo#baz').fragment
+// => 'baz'
+```
 
-	new ReUrl ('/abc/#').fragment
-	// => ''
+```javascript
+new ReUrl ('/abc/#').fragment
+// => ''
+```
 
-	new ReUrl ('/abc/').fragment
-	// => null
+```javascript
+new ReUrl ('/abc/').fragment
+// => null
+```
 
-
-#### url.toString (); url.toJSON (); url.valueOf (); url.href (getter);
+#### url.toString (); url.toJSON (); url.valueOf (); url.href
 
 Converts a ReUrl object to an URL-string. 
 
@@ -318,17 +385,18 @@ Converts a ReUrl object to an URL-string.
 Returns an Array representation of url, modeling the sequence of URL tokens as described in the Theory section above. 
 (Note, the actual format of the tokens returned is still in flux.)
 
-	new ReUrl ('http://example.com/foo/bar/baz?q#h') .toArray ()
-	// => 
-	// [ [ 'scheme', 'http' ],
-	//   [ 'authority', { user: null, pass: null, host: 'example.com', port: null } ],
-	//   [ 'root', '/' ],
-	//   [ 'directory', 'foo' ],
-	//   [ 'directory', 'bar' ],
-	//   [ 'file', 'baz' ],
-	//   [ 'query', 'q' ],
-	//   [ 'fragment', 'h' ] ]
-
+```javascript
+new ReUrl ('http://example.com/foo/bar/baz?q#h') .toArray ()
+// => 
+// [ [ 'scheme', 'http' ],
+//   [ 'authority', { user: null, pass: null, host: 'example.com', port: null } ],
+//   [ 'root', '/' ],
+//   [ 'directory', 'foo' ],
+//   [ 'directory', 'bar' ],
+//   [ 'file', 'baz' ],
+//   [ 'query', 'q' ],
+//   [ 'fragment', 'h' ] ]
+```
 
 #### url.goto (other)
 
@@ -338,15 +406,20 @@ If `other` is a string, it will be parsed with the parser configuration
 of `url`. If `other` is a ReUrl object then its configuration will
 be passed along to the newly returned url. 
 
-	new ReUrl ('/foo/bar') .goto ('baz/index.html') .toString ()
-	// => '/foo/baz/index.html'
+```javascript
+new ReUrl ('/foo/bar') .goto ('baz/index.html') .toString ()
+// => '/foo/baz/index.html'
+```
 
-	new ReUrl ('/foo/bar') .goto ('//host/path') .toString ()
-	// => '//host/path'
+```javascript
+new ReUrl ('/foo/bar') .goto ('//host/path') .toString ()
+// => '//host/path'
+```
 
-	new ReUrl ('http://foo/bar/baz/') .goto ('./../bee') .toString ()
-	// => 'http://foo/bar/baz/./../bee'
-
+```javascript
+new ReUrl ('http://foo/bar/baz/') .goto ('./../bee') .toString ()
+// => 'http://foo/bar/baz/./../bee'
+```
 
 #### url.normalize (); url.normalise ()
 
@@ -354,9 +427,11 @@ Returns a new ReUrl object by normalizing `url`.
 This interprets a.o. `.` and `..` segments within the path and removes default ports
 and trivial usernames/ passwords from the authority of `url`. 
 
-	new ReUrl ('http://foo/bar/baz/./../bee') .normalize () .toString ()
-	// => 'http://foo/bar/bee'
-	
+```javascript
+new ReUrl ('http://foo/bar/baz/./../bee') .normalize () .toString ()
+// => 'http://foo/bar/bee'
+```
+
 
 #### url.force (base)
 
@@ -379,18 +454,16 @@ calling `force` on any of the following URLs, will result in `http://foo/bar`.
 
 #### url.resolve (base)
 
-Equivalent to `new ReUrl (base) .goto (url) .normalize ()`
+Equivalent to `new ReUrl (base) .goto (url) .normalize ()`.
 
 
 #### url.forceResolve (base)
 
-This implements coercion according to the WhatWG URL standard. 
-Equivalent to `new ReUrl (base) .force () .goto (url) .force () .normalize ()`
+This implements coercion according to the WhatWG URL standard.  
+Equivalent to `new ReUrl (base) .force () .goto (url) .force () .normalize ()`.
 
 
-
-License
--------
+## License
 
 MIT. 
 
