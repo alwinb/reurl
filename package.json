@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/alwinb/reurl#readme",
   "dependencies": {
+    "punycode": "^2.1.1",
     "wtf-8": "^1.0.1"
   }
 }
