@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alwinb/re-url.git"
+    "url": "git+https://github.com/alwinb/reurl.git"
   },
   "keywords": [
     "URL",
@@ -22,9 +22,9 @@
   "author": "Alwin Blok",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/alwinb/re-url/issues"
+    "url": "https://github.com/alwinb/reurl/issues"
   },
-  "homepage": "https://github.com/alwinb/re-url#readme",
+  "homepage": "https://github.com/alwinb/reurl#readme",
   "dependencies": {
     "wtf-8": "^1.0.1"
   }
