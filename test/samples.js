@@ -7,23 +7,23 @@ module.exports = samples = [
   // Nonstrict goto tests
 
   {
-    url: new Url ('http://foo') .goto ('bar'),
+    url: () => new Url ('http://foo') .goto ('bar'),
     href:'http://foo/bar',
   },
   {
-    url: new Url ('httP://foo') .goto ('Http:bar'),
+    url: () => new Url ('httP://foo') .goto ('Http:bar'),
     href:'Http://foo/bar',
   },
   {
-    url: new Url ('http://foo') .goto ('http:bar'),
+    url: () => new Url ('http://foo') .goto ('http:bar'),
     href:'http://foo/bar',
   },
   {
-    url: new Url ('http://foo') .goto ('#bar'),
+    url: () => new Url ('http://foo') .goto ('#bar'),
     href:'http://foo#bar',
   },
   {
-    url: new Url ('foo#boo') .goto (''),
+    url: () => new Url ('foo#boo') .goto (''),
     href:'foo',
   },
 
@@ -31,19 +31,19 @@ module.exports = samples = [
   // setHost tests
 
   {
-    url: new Url ('file:') .set ({ host:'localhost' }),
+    url: () => new Url ('file:') .set ({ host:'localhost' }),
     href: 'file://localhost',
     scheme: 'file',
     host: 'localhost',
   },
   {
-    url: new Url ('file://localhost') .set ({ host:'foo' }),
+    url: () => new Url ('file://localhost') .set ({ host:'foo' }),
     href: 'file://foo',
     scheme: 'file',
     host: 'foo',
   },
   {
-    url: new Url ('file:/') .set ({ host:'foo', file: 'fi' }),
+    url: () => new Url ('file:/') .set ({ host:'foo', file: 'fi' }),
     href: 'file://foo/fi',
     scheme: 'file',
     host: 'foo',
@@ -81,7 +81,7 @@ module.exports = samples = [
   // setDrive tests
 
   {
-    url: new Url ('file:'),
+    url: () => new Url ('file:'),
     href: "file:",
     scheme: "file",
     host: null,
@@ -226,7 +226,7 @@ module.exports = samples = [
     file: null
   },
   {
-    url: new Url ('C|', { detectDrive:true }),
+    url: () => new Url ('C|', { detectDrive:true }),
     scheme: null,
     drive: 'C|',
     root: null,
@@ -235,42 +235,42 @@ module.exports = samples = [
   },
   {
     // NB!! Parsing //c: as /c:
-    url: new Url ('http://C|', { detectDrive:true }),
+    url: () => new Url ('http://C|', { detectDrive:true }),
     drive: 'C|',
     root: null,
     host: null,
     file: null
   },
   {
-    url: new Url ('http://C|', { detectDrive:false }),
+    url: () => new Url ('http://C|', { detectDrive:false }),
     drive: null,
     root: null,
     host: 'C|',
     file: null
   },
   {
-    url: new Url ('/D:/') .goto ('http:C|/'),
+    url: () => new Url ('/D:/') .goto ('http:C|/'),
     drive: null,
     root: null,
     host: null,
     file: null
   },
   {
-    url: new Url ('http://foo@localhost/D:/'),
+    url: () => new Url ('http://foo@localhost/D:/'),
     drive: null,
     root: '/',
     host:'localhost',
     file: null
   },
   {
-    url: new Url ('http+git:\\\\foo@localhost\\D:\\', myconf),
+    url: () => new Url ('http+git:\\\\foo@localhost\\D:\\', myconf),
     drive: null,
     root: '/',
     host:'localhost',
     file: null
   },
   {
-    url: new Url ('file:\\\\foo@localhost\\D:\\', myconf),
+    url: () => new Url ('file:\\\\foo@localhost\\D:\\', myconf),
     drive: 'D:',
     root: '/',
     host:'localhost',
@@ -398,7 +398,7 @@ module.exports = samples = [
   // 'Force' tests
   
   {
-    url: new Url ('http:www.example.com') .force (),
+    url: () => new Url ('http:www.example.com') .force (),
     href: 'http://www.example.com' // Question, should force also add root?
   },
 

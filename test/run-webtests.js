@@ -1,125 +1,54 @@
-const Url = require ('../lib/index') .Url
-  , Tests = require ('./testset')
-
-const wtf8 = require ('wtf-8')
-const punycode = require ('punycode')
-
+const { Url, _encode } = require ('../lib/')
+const Tests = require ('./testset')
 const log = console.log.bind (console)
-
-// For the time being, for preencoding components
-
-const specialSchemes = {
-  ftp: 21,
-  file: null ,
-  gopher: 70,
-  http: 80,
-  https: 443,
-  ws: 80,
-  wss: 443
-}
-
-const C0_ESC  = /[\x00-\x1F\x7F-\xFF]/g
-  , HOST_ESC  = C0_ESC
-
-function _escapeChar (char) {
-  const b = char.charCodeAt (0)
-  return (b > 0xf ? '%' : '%0') + b.toString (16) .toUpperCase ()
-}
-
-function _encode (value, regex) {
-  return wtf8.encode (value) .replace (regex, _escapeChar)
-}
-
-function printHost ({ scheme = null, host = null }) {
-  if (host == null) return ''
-  return scheme in specialSchemes ? punycode.toASCII (host) .toLowerCase (): _encode (host, HOST_ESC)
-}
-
 
 // Test 
 // ----
+
 const testData = require ('../git-ignore/urltestdata.json')
 
+class WebTests extends Tests {
+  compactInput (input) { return input.href }
+  compactOutput (output) { return output.href }
+}
 
-const testSet = new Tests (testData, runTest)
-
-  .filter (input => {
-    return (input
-      && typeof input === 'object'
-      // && input.hostname
-      // Just quick exclude, these ipv6 tests
-      && (input.hostname && !(input.hostname.substr (0,1) === '[' && input.hostname.substr (-1) === ']'))
-      )
-  })
+const testSet = new WebTests (testData, runTest)
+  .filter (input => input && typeof input === 'object')
 
   .assert ('equal failure', (input, output, error) => {
-    return (!!input.failure) === (!!error)
-  })
+    if (error) output.error = error
+    return !!input.failure === !!error })
 
   .assert ('equal href', (input, output, error) => {
-    return error || output.href === input.href
+    return input.failure || input.href === output.href
   })
-
-  .assert ('equal hostname', (input, output, error) => {
-    const host = output._hostname
-    return (error
-      || host === input.hostname
-      || host == null && input.hostname === ''
-      )
-  })
-
-testSet.compactInput = input => input.href
-testSet.compactOutput = output => output.href
-
-
-//log (testData[1])
-//log (initTest(testData[1]))
-testSet.run ()
-
 
 
 function runTest (test) {
-  var base = Url.fromString (test.base) .force () .normalize ()
-  var input = Url.fromString (test.input) // TODO... if allow passing a fallback scheme string as conf for schemeless urls only ?
-  var resolved = base.goto (input) .force () .normalise ()
-  resolved = dropHostForDrive (resolved)
-  resolved = dropEmpties (resolved)
-
-  resolved._href = resolved.href
-  resolved._hostname = printHost (resolved)
-  resolved._tokens = [...resolved]
+  var base = new Url (test.base) .force ()
+  var input = new Url (test.input, { parser:base.scheme })
+  var resolved = input.resolve (base) .force () .normalise ()
+  resolved = normaliseFileUrl (resolved)
   return resolved
 }
-
 
 // This is functionality that I am not sure I want in the lib,
 // and so, I do it here to make the failing tests pass
 
-function dropHostForDrive (url) {
-  if (url.drive) url.host = ''
-  return url
+function normaliseFileUrl (url) {
+  if (url.scheme !== 'file') return url
+  if (url.drive) return url.set ({ host: '' })
+  const dirs = []
+  const it = (url.dirs||[])[Symbol.iterator]()
+  for (let x of it)
+    if (x !== '') dirs.push (x, ...it)
+  return url.set ({ dirs })
 }
 
-// This is especially unpleasant behaviour
-// defined in the new spec
+// TODO validate 'dirs' to be iterable
+// And.. also make a defensive copy?
+// var r = new Url ('file:///foo').set ({ dirs:1 })
+// log (r)
 
-function dropEmpties (url) {
-  if (url.scheme === 'file') {
-    const parts = []
-    let dirSeen = false
-    let _root = null
-    let tokens = [...url]
-    for (let i=0, l=tokens.length; i<l; i++) {
-      let a = tokens[i]
-      let [t, v] = a
-      if (t === 'drive') dirSeen = a
-      if (t === 'root') _root = a
-      if (_root && !dirSeen && t === 'dir') {
-        if (v !== '') parts.push (dirSeen = a)
-      }
-      else parts.push (a)
-    }
-    return new Url () .addTokens (parts)
-  }
-  return url
-}
+var code = testSet.run ()
+process.exit (code)
