@@ -1,89 +1,120 @@
-"use strict"
 const Url = require ('../lib')
-  , Tests = require ('./testset')
-
 const log = console.log.bind (console)
+const samples = require ('./samples')
+const Tests = require ('./testset')
 
+// Set up tests
 
-// Test 
-// ----
-
-const testSet = new Tests (require ('./urltestdata.json'), initTest)
-
-  // . add (test => { if (test)
-  //     Tests.assert (test.resolvedFailure === !!test.originalFailure, 'equal failure', test)
-  //   })
-
-  . add (test => { if (test && !test.originalFailure) {
-      Tests.assert (test.resolvedHref === test.originalHref, 'equal href', test)
-    }})
-
-
-function initTest (test) {
-  if (typeof test !== 'object') return
-
-  try {
-    var base = new Url (test.base) .force () .normalize ()
-    var input = new Url (test.input, { scheme:base.scheme })
-    var resolved = base.goto (input) .force () .normalize ()
-
-    resolved = dropEmpties (resolved)
-    resolved = dropHostForDrive (resolved)
-    resolved.failure = false
+const init = test => {
+  let output
+  if (typeof test.url === 'function') {
+    test._url = test.url + ''
+    output = test.url ()
   }
-  catch {
-    base = input = []
-    resolved = []
-    resolved.failure = true
-  }
+  else if (typeof test.url === 'string')
+    output = new Url (test.url)
+  else output = test.url
 
-  var testData = 
-    { testbase: test.base
-    , testinput: test.input
-
-    , originalFailure: !!test.failure
-    , resolvedFailure: resolved.failure
-
-    , originalHref: test.href
-    , resolvedHref: resolved.href
-    
-    , parsedBase: [...base]
-    , parsedInput: [...input]
-    , resolved: [...resolved]
-    }
-  return testData
+  return output
 }
 
+//
 
-// This is functionality that I am not sure I want in the lib,
-// and so, I do it here to make the failing tests pass
+const checkHref = (test, output) =>
+  'href' in test ? output.href == test.href : true
 
-function dropHostForDrive (url) {
-  return url.drive ? url.set ({ host:'' }) : url
+const checkScheme = (test, output) =>
+  'scheme' in test ? output.scheme == test.scheme : true
+
+const checkPass = (test, output) =>
+  'pass' in test ? output.pass == test.pass : true
+
+const checkDrive = (test, output) =>
+  'drive' in test ? output.drive == test.drive : true
+
+const checkHostname = (test, output) =>
+  'host' in test ? output.host == test.host : true
+
+const checkPort = (test, output) =>
+  'port' in test ? output.port == test.port : true
+
+const checkRoot = (test, output) =>
+  'root' in test ? output.root == test.root : true
+
+const checkFile = (test, output) =>
+  'file' in test ? output.file == test.file : true
+
+const checkError = (test, output, error) =>
+  !test.error || error // && error.message === test.error
+
+
+const testset = new Tests (samples, init)
+  . assert ('checkHref', checkHref)
+  . assert ('checkScheme', checkScheme)
+  . assert ('checkPass', checkPass)
+  . assert ('checkHostname', checkHostname)
+  . assert ('checkPort', checkPort)
+  . assert ('checkDrive', checkDrive)
+  . assert ('checkRoot', checkRoot)
+  . assert ('checkFile', checkFile)
+  . assert ('checkError', checkError)
+
+
+testset.compactInput = function (inp) {
+  return inp.url.href
 }
 
-// This is especially unpleasant behaviour
-// defined in the new spec
+if (testset.run () !== true)
+  process.exit (1)
 
-function dropEmpties (url) {
-  if (url.scheme === 'file') {
-    const parts = []
-    let dirSeen = false
-    let _root = null
-    let tokens = [...url]
-    for (let i=0, l=tokens.length; i<l; i++) {
-      let a = tokens[i]
-      let [t, v] = a
-      if (t === 'drive') dirSeen = a
-      if (t === 'root') _root = a
-      if (_root && !dirSeen && t === 'dir') {
-        if (v !== '') parts.push (dirSeen = a)
-      }
-      else parts.push (a)
-    }
-    return Url.fromTokens (parts)
-  }
-  return url
-}
 
-testSet.run ()
+// Other tests/ disabled for now
+// url: () => new Url ('file:') .set ({ user: 'joe' })
+// url: () => new Url ('file://foo') .set ({ user: 'joe' })
+
+
+// Idea for path API?
+/*
+var r = new Url ('//foo/bar/../baz/bee/boo?qu')
+log (r.href)
+r = r.dropDirectory ()
+log (r.href)
+r = r.dropDirectory ()
+log (r.href)
+r = r.dropDirectory ()
+log (r.href)
+r = r.dropDirectory ()
+log (r.href)
+r = r.dropDirectory ()
+log (r.href)
+r = r.dropDirectory ()
+log (r.href)
+r = r.dropDirectory ()
+log (r.href)
+//r = r.withDirectory ('one')
+//log (r.href)
+//r = r.withDirectory ('two')
+//log (r.href)
+//r = r.withDirectory ('three')
+//log (r.href)
+//*/
+
+
+// Quick 'test's, just run
+// log (new Url ('c:/host/abc', 'file'))
+// log (new Url ('c:/d:/host/abc', 'file'))
+// log (new Url ('c|/host/abc', 'file'))
+// log (new Url ('c|/d:/host/abc', 'file'))
+// log (new Url ('cs/d:/host/abc', 'file'))
+// log (new Url ('/c:/host/abc', 'file'))
+// log (new Url ('/c:/d:/host/abc', 'file'))
+// log (new Url ('/cs/d:/host/abc', 'file'))
+// log (new Url ('//c:/host/abc', 'file'))
+// log (new Url ('//c:/d:/host/abc', 'file'))
+// log (new Url ('//cs/d:/host/abc', 'file'))
+// log (new Url ('///c:/host/abc', 'file'))
+// log (new Url ('///c:/d:/host/abc', 'file'))
+// log (new Url ('///cs/d:/host/abc', 'file'))
+// log (new Url ('file:///c:/host/abc', 'file'))
+// log (new Url ('file:///c:/d:/host/abc', 'file'))
+// log (new Url ('file:///cs/d:/host/abc', 'file'))

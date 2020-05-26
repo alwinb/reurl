@@ -131,7 +131,7 @@ To add to or change the values of URL components,
 use the `set (dict)` method, where `dict` is a patch object with component values to be changed. 
 Returns a new Url object with updated values. 
 
-The `dict` obect may contain the following keys. 
+The `dict` object may contain the following keys. 
 
 - scheme, if present, must be `null` or a valid scheme string (without the trailing colon). 
 - user, if present must be `null` or a string
@@ -140,14 +140,14 @@ The `dict` obect may contain the following keys.
 - port, if present, must be `null`, a valid port number, or a valid port string. 
 - drive, if present, must be `null` or a valid drive letter string. 
 - root
-- file, if present, muse be `null`, or a non-empty string value
+- file, if present, must be `null`, or a non-empty string value
 - query, if present, must be `null` or a string
 - hash, if present must be `null`, or a string
 
 To remove a component, you can set its value to `null`. 
 
 - Setting a new username also updates the password, defaulting to `null` if no password value is supplied. 
-- Setting a hostname also update username, password, and port, defaulting to `null` if no values for them are supplied. 
+- Setting a hostname also updates username, password, and port, defaulting to `null` if no values for them are supplied. 
 - Setting the scheme, port, drive, or file to an invalid value throws a TypeError. 
 
 
