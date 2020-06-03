@@ -1,4 +1,4 @@
-const Url = require ('../lib')
+const Url = require ('../lib/urlregex')
 const log = console.log.bind (console)
 const samples = require ('./samples')
 const Tests = require ('./testset')
@@ -10,6 +10,7 @@ const init = test => {
   if (typeof test.url === 'function') {
     test._url = test.url + ''
     output = test.url ()
+    output._href = output.href
   }
   else if (typeof test.url === 'string')
     output = new Url (test.url)
@@ -45,7 +46,8 @@ const testset = new Tests (samples, init)
     testset .assert ('check ' + key, checkKey (key))
 
 testset.compactInput = function (inp) {
-  return inp.url.href
+  var url = inp.url
+  return url instanceof Url ? url.href : url + ''
 }
 
 if (testset.run () !== true)

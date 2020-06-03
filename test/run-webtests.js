@@ -1,4 +1,4 @@
-const { Url, _encode } = require ('../lib/')
+const { Url, _encode } = require ('../lib/urlregex')
 const Tests = require ('./testset')
 const log = console.log.bind (console)
 
@@ -29,6 +29,7 @@ function runTest (test) {
   var input = new Url (test.input, { parser:base.scheme })
   var resolved = input.resolve (base) .force () .normalise ()
   resolved = normaliseFileUrl (resolved)
+  resolved._href = resolved.href
   return resolved
 }
 

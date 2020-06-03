@@ -1,4 +1,4 @@
-const Url = require ('../urlregex')
+const Url = require ('../lib/urlregex')
 const myconf = scheme => ({ convertSlashes: /^http\+/.test (scheme) ? true : null })
 
 module.exports = samples = [
@@ -137,7 +137,7 @@ module.exports = samples = [
   },
   {
     url: () => new Url ('file:') .set ({ drive:'g|d' }),
-    error: 'invalid drive value: "g|d"',
+    error: 'ERR_INVALID_DRIVE',
   },
 
 
@@ -361,11 +361,11 @@ module.exports = samples = [
 
   {
     url: () => new Url ('//[user@foo]@foo/boo') .set ({ port:'iii' }),
-    error: 'invalid port value: "iii"',
+    error: 'ERR_INVALID_PORT',
   },
   {
     url: () => new Url ('#foo') .set ({ port:'1' }),
-    error: 'cannot set { port: "1" } on hostless URL <#foo>',
+    error: 'ERR_NOAUTH',
   },
   {
     url: '//[user@foo]@foo/boo',
