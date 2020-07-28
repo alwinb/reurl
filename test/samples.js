@@ -49,6 +49,19 @@ module.exports = samples = [
     host: 'foo',
     file: 'fi',
   },
+  {
+    url: () => new Url ('http:') .set ({ host:'%66%6f%6f' }),
+    href: 'http://foo',
+    host: 'foo',
+  },
+  {
+    url: () => new Url ('http:') .set ({ host:'%66%6f%6f', percentCoded:true }),
+    host:'%66%6f%6f',
+  },
+  {
+    url: () => new Url ('http:') .set ({ host:'f-%25-oo' }),
+    error: 'ERR_FORBIDDEN_HOST_CODEPOINT',
+  },
 
 
   // setPort tests
@@ -413,7 +426,7 @@ module.exports = samples = [
     percentCoded: false,
   },
   {
-    url: () => new Url (null, { percentCoding:'preserve'}) 
+    url: () => new Url (null, { percentCoding:'preserve' }) 
       .set ({ host: '%66%6f%6f' })
       .set ({ file: 'file-with-%-sign', percentCoded:false }),
     host: '%66%6f%6f',
