@@ -451,4 +451,42 @@ module.exports = samples = [
     url: () => new Url ('htTP:file.txt#hash') .resolve ('HTtp://host/dir/'),
     href: 'htTP://host/dir/file.txt#hash',
   },
+
+
+  // Force tests
+  
+  {
+    url: ( ) => new Url ('http:www.example.com') .force (),
+    href: 'http://www.example.com' // Force does not add root!
+  },
+  {
+    url: () => new Url ('http:foo/bar/baz'). force (),
+    host: 'foo',
+    dirs: ['bar'],
+    file: 'baz',
+  },
+  {
+    url: () => new Url ('http:/jack@foo/bar/baz'). force (),
+    user: 'jack',
+    pass: null,
+    host: 'foo',
+    dirs: ['bar'],
+    file: 'baz',
+  },
+  {
+    url: () => new Url ('http:////jack@foo/'). force (),
+    user: 'jack',
+    pass: null,
+    host: 'foo',
+  },
+  {
+    url: () => new Url ('http:////jack@foo'). force (),
+    user: 'jack',
+    pass: null,
+    host: 'foo',
+  },
+  {
+    url: () => new Url ('http:////'). force (),
+    error: 'ERR_FORCE_FAILED',
+  },
 ]
