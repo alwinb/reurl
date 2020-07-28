@@ -335,6 +335,7 @@ module.exports = samples = [
   , href: 'http://example.com//foo//bar/'
   },
 
+
   // Other tests
 
   {
@@ -373,6 +374,7 @@ module.exports = samples = [
     port: null,
   },
 
+
   // 'Force' tests
   
   {
@@ -380,4 +382,43 @@ module.exports = samples = [
     href: 'http://www.example.com' // Question, should force also add root?
   },
 
+
+  // PercentCoding Tests
+  
+  {
+    url: () =>
+      new Url ('http://foo/🌿🦍/%42?%F0%9F%8C%BF', { percentCoding:'decode' })
+      .set ({ hash:'%43' }),
+    file: 'B',
+    hash: '%2543',
+    query: '🌿'
+  },
+  {
+    url: () => {
+      var r = new Url ('http://foo/🌿🦍/%42?%F0%9F%8C%BF', { percentCoding:'decode' })
+      return new Url (r, { percentCoding:'preserve' }) .set ({ hash: '%43' })
+    },
+    file: 'B',
+    hash: '%43',
+    query: '🌿'
+  },
+  {
+    url: () => 
+      new Url (null, { percentCoding:'decode' }) 
+        .set ({ host: '%66%6f%6f', percentCoded:true })
+        .set ({ file: 'file-with-%-sign' }),
+    host: 'foo',
+    file: 'file-with-%-sign',
+    href: '//foo/file-with-%25-sign',
+    percentCoded: false,
+  },
+  {
+    url: () => new Url (null, { percentCoding:'preserve'}) 
+      .set ({ host: '%66%6f%6f' })
+      .set ({ file: 'file-with-%-sign', percentCoded:false }),
+    host: '%66%6f%6f',
+    file: 'file-with-%25-sign',
+    href: '//%66%6f%6f/file-with-%25-sign',
+    percentCoded: true,
+  },
 ]
