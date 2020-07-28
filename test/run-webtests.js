@@ -27,7 +27,16 @@ const testSet = new WebTests (testData, runTest)
 function runTest (test) {
   var base = new Url (test.base) .force ()
   var input = new Url (test.input, { parser:base.scheme })
+  const percentCoding = 'preserve'
+  var base = new Url (test.base, { percentCoding }) .force ()
+  var input = new Url (test.input, { parser:base.scheme, percentCoding })
   var resolved = input.resolve (base) .force () .normalise ()
+
+  // TODO this should be the same?
+  // No because the cannot-be-base check is not done in 'goto'
+  // SHould it?
+  // var resolved = base.goto (test.input) .force() .normalise()
+
   resolved = normaliseFileUrl (resolved)
   resolved._href = resolved.href
   return resolved
