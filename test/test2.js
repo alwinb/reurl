@@ -155,15 +155,15 @@ assert.equals (r.host, 'host')
 var r = new Url ('http:file.txt') .resolve ('http://host/')
 assert.equal (r.href, 'http://host/file.txt')
 
-// See if it works with different percentCoding settings' // FIXME
-// var r = new Url ('http:with-%25-sign.txt', { percentCoding:'decode' }) .resolve ('http://%66%6f%6f')
-// assert.equal (r.href, 'http://foo/with-%25-sign.txt')
+// See if it works with different percentCoding settings'
+var r = new Url ('http:with-%25-sign.txt', { percentCoding:'decode' }) .resolve ('http://%66%6f%6f')
+assert.equal (r.href, 'http://foo/with-%25-sign.txt')
 
 var r = new Url ('http:/with-%25-sign.d/%66%6f%6f.txt', { percentCoding:'preserve' })
-  .resolve (new Url('http://%66-%25-%6f%6f', { percentCoding:'decode' })) // FIXME
+  .resolve (new Url('http://%66-%25-%6f%6f', { percentCoding:'decode' }))
 assert.equal (r.percentCoded, true)
-// assert.equal (r.href, 'http://f-%25-oo/with-%25-sign.d/%66%6f%6f.txt')
-// assert.equal (r.host, 'f-%25-oo')
+assert.equal (r.href, 'http://f-%25-oo/with-%25-sign.d/%66%6f%6f.txt')
+assert.equal (r.host, 'f-%25-oo')
 
 
 // ... And respects schemes

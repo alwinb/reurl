@@ -421,4 +421,34 @@ module.exports = samples = [
     href: '//%66%6f%6f/file-with-%25-sign',
     percentCoded: true,
   },
+
+  
+  // Resolve tests
+
+  {
+    _: 'See if resolve works',
+    url: () => new Url ('http:file.txt') .resolve ('http://host/'),
+    href: 'http://host/file.txt'
+  },
+  {
+    _: 'See if it works with different percentCoding settings',
+    url: () => new Url ('http:with-%25-sign.txt') .resolve ('http://%66%6f%6f'),
+    href: 'http://foo/with-%25-sign.txt'
+  },
+  {
+    url: () => new Url ('http:/with-%25-sign.d/%66%6f%6f.txt', { percentCoding: 'preserve' }) .resolve (new Url('http://%66-%25-%6f%6f')),
+    href: 'http://f-%25-oo/with-%25-sign.d/%66%6f%6f.txt',
+    percentCoded: true,
+    host: 'f-%25-oo'
+  },
+  {
+    _: '... And respects schemes',
+    url: () => new Url ('http:file.txt') .resolve ('file://host/'),
+    href: 'http:file.txt'
+  },
+  {
+    _: '... And works with host-relative URLs',
+    url: () => new Url ('htTP:file.txt#hash') .resolve ('HTtp://host/dir/'),
+    href: 'htTP://host/dir/file.txt#hash',
+  },
 ]
