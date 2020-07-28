@@ -208,6 +208,7 @@ module.exports = samples = [
   },
 
   // Drive letter tests
+  // REVIEW: parsing //c: as /c:
 
   {
     url: 'C|',
@@ -226,7 +227,7 @@ module.exports = samples = [
     file: null
   },
   {
-    url: () => new Url ('C|', { detectDrive:true }),
+    url: () => new Url ('C|', { parser:'file' }),
     scheme: null,
     drive: 'C|',
     root: null,
@@ -234,15 +235,7 @@ module.exports = samples = [
     file: null
   },
   {
-    // NB!! Parsing //c: as /c:
-    url: () => new Url ('http://C|', { detectDrive:true }),
-    drive: 'C|',
-    root: null,
-    host: null,
-    file: null
-  },
-  {
-    url: () => new Url ('http://C|', { detectDrive:false }),
+    url: 'http://C|',
     drive: null,
     root: null,
     host: 'C|',
@@ -256,25 +249,10 @@ module.exports = samples = [
     file: null
   },
   {
-    url: () => new Url ('http://foo@localhost/D:/'),
+    url: 'http://foo@localhost/D:/',
     drive: null,
     root: '/',
     host:'localhost',
-    file: null
-  },
-  {
-    url: () => new Url ('http+git:\\\\foo@localhost\\D:\\', myconf),
-    drive: null,
-    root: '/',
-    host:'localhost',
-    file: null
-  },
-  {
-    url: () => new Url ('file:\\\\foo@localhost\\D:\\', myconf),
-    drive: 'D:',
-    root: '/',
-    host:'localhost',
-    port: null,
     file: null
   },
 
