@@ -1,6 +1,6 @@
 "use strict"
 const { Url, RawUrl } = require ('../lib')
-const Tests = require ('./testset')
+const Tests = require ('./test-runner')
 const log = console.log.bind (console)
 
 // Test 
@@ -59,5 +59,4 @@ function normaliseFileUrl (url) {
 // var r = new Url ('file:///foo').set ({ dirs:1 })
 // log (r)
 
-var code = testSet.run ()
-process.exit (code)
+module.exports = testSet
