@@ -1,4 +1,4 @@
-const { Url, _encode } = require ('../lib/urlregex')
+const { Url, _encode } = require ('../lib')
 const Tests = require ('./testset')
 const log = console.log.bind (console)
 

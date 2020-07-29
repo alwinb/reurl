@@ -1,4 +1,4 @@
-const Url = require ('../lib/urlregex')
+const Url = require ('../lib')
 const myconf = scheme => ({ convertSlashes: /^http\+/.test (scheme) ? true : null })
 
 module.exports = samples = [

@@ -1,4 +1,4 @@
-const Url = require ('../lib/urlregex')
+const Url = require ('../lib')
 const log = console.log.bind (console)
 const samples = require ('./samples')
 const Tests = require ('./testset')
