@@ -50,10 +50,8 @@ module.exports = samples = [
     file: 'fi',
   },
   {
-    url: () => new Url ('http:') .set ({ host:'%66%6f%6f' }),
-    href: 'http://%66%6f%6f',
-    host: '%66%6f%6f',
-    percentCoded: false
+    url: () => new Url ('http:') .set ({ host:'%66%6f%6f' }), // NB percentcoded:false is implied!
+    error: 'ERR_FORBIDDEN_HOST_CODEPOINT',
   },
   {
     url: () => new Url ('http:', { percentCoding:'preserve' }) .set ({ host:'%66%6f%6f' }),
