@@ -51,15 +51,23 @@ module.exports = samples = [
   },
   {
     url: () => new Url ('http:') .set ({ host:'%66%6f%6f' }),
-    href: 'http://foo',
-    host: 'foo',
+    href: 'http://%66%6f%6f',
+    host: '%66%6f%6f',
+    percentCoded: false
+  },
+  {
+    url: () => new Url ('http:', { percentCoding:'preserve' }) .set ({ host:'%66%6f%6f' }),
+    href: 'http://%66%6f%6f',
+    host: '%66%6f%6f',
+    percentCoded: true
   },
   {
     url: () => new Url ('http:') .set ({ host:'%66%6f%6f', percentCoded:true }),
-    host:'%66%6f%6f',
+    host:'foo',
+    percentCoded: false
   },
   {
-    url: () => new Url ('http:') .set ({ host:'f-%25-oo' }),
+    url: () => new Url ('http:') .set ({ host:'f#oo' }),
     error: 'ERR_FORBIDDEN_HOST_CODEPOINT',
   },
 
@@ -273,11 +281,18 @@ module.exports = samples = [
   // Auth parser tests
 
   {
-    url: 'http://[foo]',
-    user: null,
-    pass: null,
-    host: '[foo]',
+    url: () => new Url ('http://f:/c'),
+    scheme: 'http',
+    host: 'f',
     port: null
+  },
+  {
+    url: 'http://[foo]',
+    error: 'Invalid IPv6 address foo'
+  },
+  {
+    url: 'http://foo:1:1',
+    error: 'ERR_INVALID_PORT'
   },
   {
     url: 'httP://[as]@foo:1',
@@ -287,42 +302,26 @@ module.exports = samples = [
     port: 1
   },
   {
-    url: () => new Url ('http://f:/c'),
-    scheme: 'http',
-    host: 'f',
-    port: null
+    url: 'http://[as@foo:1]:1',
+    error: 'ERR_INVALID_PORT'
+  },
+  {
+    url: 'http://[as:foo:1]:0',
+    error: 'Invalid IPv6 address as:foo:1'
+  },
+  {
+    url: () => new Url ('http://[as:f]@oo:19=0@bii', { percentCoding:'preserve' }),
+    pass: 'f]@oo:19=0',
+    user: '[as',
+    host: 'bii',
+    href: 'http://%5Bas:f%5D%40oo%3A19%3D0@bii'
   },
 
 
   // TODO
   /*
   {
-    url: 'http://[as@foo:1]:1',
-    host: '',
-    user: '',
-    pass: '',
-    port: ''
-  },
-  {
-    url: 'http://[as:foo@:1]:0',
-    host:'',
-    user:'',
-    pass:'',
-    port:''
-  },
-  {
     url: 'http://[as:foo:0',
-    host:'',
-    user:'',
-    pass:'',
-    port:''
-  },
-  {
-    url: 'http://[as:f]@oo:19=0@bii',
-    host:'',
-    user:'',
-    pass:'',
-    port:''
   },
   */
 
@@ -388,14 +387,6 @@ module.exports = samples = [
   },
 
 
-  // 'Force' tests
-  
-  {
-    url: () => new Url ('http:www.example.com') .force (),
-    href: 'http://www.example.com' // Question, should force also add root?
-  },
-
-
   // PercentCoding Tests
   
   {
@@ -449,10 +440,12 @@ module.exports = samples = [
     href: 'http://foo/with-%25-sign.txt'
   },
   {
-    url: () => new Url ('http:/with-%25-sign.d/%66%6f%6f.txt', { percentCoding: 'preserve' }) .resolve (new Url('http://%66-%25-%6f%6f')),
-    href: 'http://f-%25-oo/with-%25-sign.d/%66%6f%6f.txt',
+    url: () =>
+      new Url ('with-%25-sign/', { percentCoding: 'preserve' })
+      .resolve (new Url('http:/%66-%25-%6f%6f/')),
+    href: 'http:/f-%25-oo/with-%25-sign/',
     percentCoded: true,
-    host: 'f-%25-oo'
+    dirs: [ 'f-%25-oo', 'with-%25-sign.d' ],
   },
   {
     _: '... And respects schemes',
@@ -462,6 +455,7 @@ module.exports = samples = [
   {
     _: '... And works with host-relative URLs',
     url: () => new Url ('htTP:file.txt#hash') .resolve ('HTtp://host/dir/'),
+    dirs: [ 'dir' ],
     href: 'htTP://host/dir/file.txt#hash',
   },
 
