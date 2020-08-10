@@ -1,4 +1,4 @@
-const Url = require ('../lib')
+const { Url, RawUrl } = require ('../lib')
 const myconf = scheme => ({ convertSlashes: /^http\+/.test (scheme) ? true : null })
 
 module.exports = samples = [
@@ -54,7 +54,7 @@ module.exports = samples = [
     error: 'ERR_FORBIDDEN_HOST_CODEPOINT',
   },
   {
-    url: () => new Url ('http:', { percentCoding:'preserve' }) .set ({ host:'%66%6f%6f' }),
+    url: () => new RawUrl ('http:') .set ({ host:'%66%6f%6f' }),
     href: 'http://%66%6f%6f',
     host: '%66%6f%6f',
     percentCoded: true
@@ -308,7 +308,7 @@ module.exports = samples = [
     error: 'Invalid IPv6 address as:foo:1'
   },
   {
-    url: () => new Url ('http://[as:f]@oo:19=0@bii', { percentCoding:'preserve' }),
+    url: () => new RawUrl ('http://[as:f]@oo:19=0@bii'),
     pass: 'f]@oo:19=0',
     user: '[as',
     host: 'bii',
@@ -389,7 +389,7 @@ module.exports = samples = [
   
   {
     url: () =>
-      new Url ('http://foo/🌿🦍/%42?%F0%9F%8C%BF', { percentCoding:'decode' })
+      new Url ('http://foo/🌿🦍/%42?%F0%9F%8C%BF')
       .set ({ hash:'%43' }),
     file: 'B',
     hash: '%2543',
@@ -397,8 +397,8 @@ module.exports = samples = [
   },
   {
     url: () => {
-      var r = new Url ('http://foo/🌿🦍/%42?%F0%9F%8C%BF', { percentCoding:'decode' })
-      return new Url (r, { percentCoding:'preserve' }) .set ({ hash: '%43' })
+      var r = new Url ('http://foo/🌿🦍/%42?%F0%9F%8C%BF')
+      return new RawUrl (r) .set ({ hash: '%43' })
     },
     file: 'B',
     hash: '%43',
@@ -406,7 +406,7 @@ module.exports = samples = [
   },
   {
     url: () => 
-      new Url (null, { percentCoding:'decode' }) 
+      new Url (null) 
         .set ({ host: '%66%6f%6f', percentCoded:true })
         .set ({ file: 'file-with-%-sign' }),
     host: 'foo',
@@ -415,7 +415,7 @@ module.exports = samples = [
     percentCoded: false,
   },
   {
-    url: () => new Url (null, { percentCoding:'preserve' }) 
+    url: () => new RawUrl (null) 
       .set ({ host: '%66%6f%6f' })
       .set ({ file: 'file-with-%-sign', percentCoded:false }),
     host: '%66%6f%6f',
@@ -439,7 +439,7 @@ module.exports = samples = [
   },
   {
     url: () =>
-      new Url ('with-%25-sign/', { percentCoding: 'preserve' })
+      new RawUrl ('with-%25-sign/')
       .resolve (new Url('http:/%66-%25-%6f%6f/')),
     href: 'http:/f-%25-oo/with-%25-sign/',
     percentCoded: true,

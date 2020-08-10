@@ -1,4 +1,4 @@
-const Url = require ('../lib')
+const { Url, RawUrl } = require ('../lib')
 const log = console.log.bind (console)
 const samples = require ('./samples')
 const Tests = require ('./testset')
@@ -23,10 +23,10 @@ const init = test => {
 const keys = ['href', 'scheme', 'user', 'pass', 'host', 'port', 'drive', 'root', 'file', 'percentCoded' ]
 
 const checkKey = key => (test, output, error) =>
-  key in test ? output[key] == test[key] : true
+  key in test ? output[key] === test[key] : true
   
 const checkPort = (test, output) =>
-  'port' in test ? output.port == test.port : true
+  'port' in test ? output.port === test.port : true
 
 const checkDirs = (test, output) => {
   if (!('dirs' in test)) return true

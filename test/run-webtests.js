@@ -1,4 +1,5 @@
-const { Url, _encode } = require ('../lib')
+"use strict"
+const { Url, RawUrl } = require ('../lib')
 const Tests = require ('./testset')
 const log = console.log.bind (console)
 
@@ -16,7 +17,6 @@ const testSet = new WebTests (testData, runTest)
   .filter (input => input && typeof input === 'object')
 
   .assert ('equal failure', (input, output, error) => {
-    if (error) output.error = error
     return !!input.failure === !!error })
 
   .assert ('equal href', (input, output, error) => {
@@ -25,12 +25,11 @@ const testSet = new WebTests (testData, runTest)
 
 
 function runTest (test) {
-  var base = new Url (test.base) .force ()
-  var input = new Url (test.input, { parser:base.scheme })
-  const percentCoding = 'preserve'
-  var base = new Url (test.base, { percentCoding }) .force ()
-  var input = new Url (test.input, { parser:base.scheme, percentCoding })
-  var resolved = input.resolve (base) .force () .normalise ()
+  let base = new RawUrl (test.base) .force ()
+  let input = new RawUrl (test.input, { parser:base.scheme })
+  let resolved = input.resolve (base) .force () .normalise ()
+  // let decoded = new Url (resolved)
+  // resolved.set ({ host:decoded.host })
 
   // TODO this should be the same?
   // No because the cannot-be-base check is not done in 'goto'
