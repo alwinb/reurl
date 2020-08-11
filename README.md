@@ -22,6 +22,8 @@ Eventually I came up with a small 'theory' of URLs that I found very helpful and
 
 <details><summary>Theory of URLs</summary>
 
+### URLs
+
 An **URL** is a sequence of tokens where tokens are tuples (_type_, _value_), where
 
   - _type_ is taken from the set { **scheme**, **authority**, **drive**, **root**, **directory**, **file**, **query**, **fragment** } and
@@ -36,7 +38,8 @@ URLs are subject to the following structural constraints:
 An **Authority** is a named tuple (_username_, _password_, _hostname_, _port_) where
 
   - _hostname_ is an ipv6-address, an opaque-host-string, an ipv4-address, a domain (-string) or the empty string. 
-  - _username_, _password_ and _port_ are either null or a string,
+  - _username_ and _password_ are either null or a string,
+  - port is either null or an integer in the range 0 to 2<sup>16</sup>–1. 
 
 Autorities are subject to the following constraints:
 
@@ -44,12 +47,12 @@ Autorities are subject to the following constraints:
   - if _hostname_ is the empty string, then _port_, _username_ and _password_ are null. 
 
 
-### Additional constraints
+### File URLs
 
-Another set of constraints that are specific to file URLs and windows drive letters. 
+There are two additional constraints that set file URLs apart form non-file URLs. 
 
 - If an URL has a **scheme** token whose value _is not_ `file` then it must not have a **drive** token. 
-- If an URL has a **scheme** token whose value _is_ `file` and it has an **authority** token then the authority must not have a **password**, **username** or **port**. 
+- If an URL has a **scheme** token whose value _is_ `file` and it has an **authority** token then *password*, *username* and *port* must be null. 
 
 
 ### Operations on URLs
@@ -86,13 +89,14 @@ Some properties of URLs and their operations:
 - url2 is a postfix of (url1 goto url2) but not necessarily of (url1 goto' url2).
 </details>
 
-
 ## API
 
 ### Constructors
 
-The ReUrl library exposes a single Url class. 
-Url objects are immutable (changes to the fields are ignored) and methods return new Url objects. 
+The ReUrl library exposes an Url class. Url objects are immutable. Changes to the fields are ignored and methods return new objects. 
+
+In addition it exposes a RawUrl class with an identical API. The only difference is that Url objects _decode_ percent escape sequences whereas RawUrl objects _preserve_ them. 
+
 
 <details><summary>new Url (string \[, conf])</summary>
 
@@ -138,9 +142,12 @@ console.log ([...url.tokens ()])
 // => [ ['root', '/'], ['dir', 'c:'], ['file', 'foo\\bar'] ]
 ```
 </details>
-<details><summary>conf.percentCoding</summary>
 
-By default Url objects are constructed in decode mode. In decode mode the parser decodes percent-escape-sequences, getters report percent-decoded values and the _set_ method assumes that its input is percent-decoded unless explicitly specified otherwise. 
+### PercentCoding
+
+<details><summary>Url</summary>
+
+For Url objects the URL parser **decodes** percent-escape-sequences, getters report percent-decoded values and the _set_ method assumes that its input is percent-decoded unless explicitly specified otherwise. 
 
 ```javascript
 var url = new Url ('//host/%61bc')
@@ -150,11 +157,13 @@ url.query // => '%def'
 url.toString () // => '//host/abc?%25def'
 ```
 
-To create an Url in preserve mode you can set **percentCoding** to 'preserve'. 
-In preserve mode, the parser preserves percent-escape-sequences, getters report values with percent-escape-sequenes preserved and _set_ expects values in which % signs start a percent-escape sequence. 
+</details>
+<details><summary>RawUrl</summary>
+
+For RawUrl objects the parser **preserves** percent-escape-sequences, getters report values with percent-escape-sequenes preserved and _set_ expects values in which % signs start a percent-escape sequence. 
 
 ```javascript
-var url = new Url ('//host/%61bc', { percentCoding:'preserve' })
+var url = new RawUrl ('//host/%61bc')
 url.file // => '%61bc'
 url = url.set ({ query:'%25%64ef' })
 url.query // => '%25%64ef'
@@ -420,38 +429,22 @@ new Url ('/abc/') .hash
 
 <details><summary>url.set (patch)</summary>
 
-Url objects are immutable, therefore setting and removing components is achieved via a _set_ method that takes a _patch_ object. To remove a component you can set its value to null.
+Url objects are immutable, therefore setting and removing components is achieved via a _set_ method that takes a _patch_ object. 
 
 The _patch_ object may contain one or more keys being 
-**scheme**, **user**, **pass**, **host**, **port**, **drive**, **root**, **dirs**, **file**, **query** and/ or **hash**. 
+**scheme**, **user**, **pass**, **host**, **port**, **drive**, **root**, **dirs**, **file**, **query** and/ or **hash**. To remove a component you can set its value to null.
+
+If present;
+– **port** must be `null`, a string, or a number
+– **dirs** must be an array of strings
+– **root** may be anything and is converted to `'/'` if truth-y and to `null` otherwise
+– all others must be `null` or a string. 
 
 ```javascript
 new Url ('//host/dir/file')
   .set ({ host:null, query:'q', hash:'h' })
   .toString ()
 // => '/dir/file?q#h'
-```
-
-##### PercentCoding
-
-The _patch_ may have an additional key **percentCoded** with a boolean value to indicate that "%" characters start a percent-encoded byte (true) or not (false). 
-
-In decode mode you can pass percent-_encoded_ values by explicity setting **percentCoded** to true. Values will be decoded. 
-
-```javascript
-var url = new Url ('//host/')
-url = url.set ({ file:'%61bc-%25-sign', percentCoded:true })
-url.file // => 'abc-%-sign'
-log (url.toString ()) // => '//host/abc-%25-sign'
-```
-
-In preserve mode you can pass percent-_decoded_ values by explicitly setting **percentCoded** to false. 
-
-```javascript
-var url = new Url ('//host/', { percentCoding:'preserve' })
-url = url.set ({ file:'abc-%-sign', percentCoded:false })
-url.file // => 'abc-%25-sign'
-url.toString () // => '//host/abc-%25-sign'
 ```
 
 ##### Additional resets
@@ -473,14 +466,41 @@ new Url ('http://joe:secret@localhost:8080')
 ```
 
 
-##### Input validation
+</details>
+<details><summary>patch.percentCoded</summary>
 
-- If present, **port** must be `null`, a port-string, or a number. 
-- If present, **root** may be any value and is converted to `'/'` if truth-y and to `null` otherwise. 
-- If present, **dirs** must be an array of strings. 
-- All others, if present must  be `null` or a string. 
-- Setting the **scheme**, **port**, **drive**, or **file** to an invalid string will result in a TypeError. 
-- Setting **root** to `null` will result in an error if it cannot be removed. This happens if the Url has a host or a drive, and also a dir or a file. 
+The _patch_ may have an additional key **percentCoded** with a boolean value to indicate that strings in the patch contain percent encode sequences.
+
+This means that you can pass percent-_encoded_ values to Url.set by explicity setting **percentCoded** to true. The values will then be decoded. 
+
+```javascript
+var url = new Url ('//host/')
+url = url.set ({ file:'%61bc-%25-sign', percentCoded:true })
+url.file // => 'abc-%-sign'
+log (url.toString ()) // => '//host/abc-%25-sign'
+```
+
+You can pass percent-_decoded_ values to RawUrl.set by explicitly setting **percentCoded** to false. Percent characters in values will then be encoded; specifically, they will be replaced with `%25`. 
+
+```javascript
+var rawUrl = new RawUrl ('//host/')
+rawUrl = rawUrl.set ({ file:'abc-%-sign', percentCoded:false })
+rawUrl.file // => 'abc-%25-sign'
+rawUrl.toString () // => '//host/abc-%25-sign'
+```
+
+**Note** that if no percentCoded value is specified, then Url.set assumes percentCoded to be _false_ whilst RawUrl.set assumes percentCoded to be _true_. 
+
+```javascript
+var url = new Url ('//host/') .set ({ file:'%61bc' })
+url.file // => '%61bc'
+url.toString () // => '//host/%2561bc'
+```
+```javascript
+var rawUrl = new RawUrl ('//host/') .set ({ file:'%61bc' })
+url.file // => '%61bc'
+rawUrl.toString () // => '//host/%61bc'
+```
 
 </details>
 
