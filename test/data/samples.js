@@ -1,5 +1,4 @@
-const { Url, RawUrl } = require ('../lib')
-const myconf = scheme => ({ convertSlashes: /^http\+/.test (scheme) ? true : null })
+const { Url, RawUrl } = require ('../../lib')
 
 module.exports = samples = [
 
@@ -23,7 +22,7 @@ module.exports = samples = [
     href:'http://foo#bar',
   },
   {
-    url: () => new Url ('foo#boo') .goto (''),
+    url: () => new Url ('foo#boso') .goto (''),
     href:'foo',
   },
 
