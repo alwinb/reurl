@@ -1,5 +1,4 @@
-const Url = require ('../lib')
-const myconf = scheme => ({ convertSlashes: /^http\+/.test (scheme) ? true : null })
+const { Url, RawUrl } = require ('../../lib')
 
 module.exports = samples = [
 
@@ -7,23 +6,23 @@ module.exports = samples = [
   // Nonstrict goto tests
 
   {
-    url: new Url ('http://foo') .goto ('bar'),
+    url: () => new Url ('http://foo') .goto ('bar'),
     href:'http://foo/bar',
   },
   {
-    url: new Url ('httP://foo') .goto ('Http:bar'),
+    url: () => new Url ('httP://foo') .goto ('Http:bar'),
     href:'Http://foo/bar',
   },
   {
-    url: new Url ('http://foo') .goto ('http:bar'),
+    url: () => new Url ('http://foo') .goto ('http:bar'),
     href:'http://foo/bar',
   },
   {
-    url: new Url ('http://foo') .goto ('#bar'),
+    url: () => new Url ('http://foo') .goto ('#bar'),
     href:'http://foo#bar',
   },
   {
-    url: new Url ('foo#boo') .goto (''),
+    url: () => new Url ('foo#boso') .goto (''),
     href:'foo',
   },
 
@@ -31,23 +30,42 @@ module.exports = samples = [
   // setHost tests
 
   {
-    url: new Url ('file:') .set ({ host:'localhost' }),
+    url: () => new Url ('file:') .set ({ host:'localhost' }),
     href: 'file://localhost',
     scheme: 'file',
     host: 'localhost',
   },
   {
-    url: new Url ('file://localhost') .set ({ host:'foo' }),
+    url: () => new Url ('file://localhost') .set ({ host:'foo' }),
     href: 'file://foo',
     scheme: 'file',
     host: 'foo',
   },
   {
-    url: new Url ('file:/') .set ({ host:'foo', file: 'fi' }),
+    url: () => new Url ('file:/') .set ({ host:'foo', file: 'fi' }),
     href: 'file://foo/fi',
     scheme: 'file',
     host: 'foo',
     file: 'fi',
+  },
+  {
+    url: () => new Url ('http:') .set ({ host:'%66%6f%6f' }), // NB percentcoded:false is implied!
+    error: 'ERR_FORBIDDEN_HOST_CODEPOINT',
+  },
+  {
+    url: () => new RawUrl ('http:') .set ({ host:'%66%6f%6f' }),
+    href: 'http://%66%6f%6f',
+    host: '%66%6f%6f',
+    percentCoded: true
+  },
+  {
+    url: () => new Url ('http:') .set ({ host:'%66%6f%6f', percentCoded:true }),
+    host:'foo',
+    percentCoded: false
+  },
+  {
+    url: () => new Url ('http:') .set ({ host:'f#oo' }),
+    error: 'ERR_FORBIDDEN_HOST_CODEPOINT',
   },
 
 
@@ -81,7 +99,7 @@ module.exports = samples = [
   // setDrive tests
 
   {
-    url: new Url ('file:'),
+    url: () => new Url ('file:'),
     href: "file:",
     scheme: "file",
     host: null,
@@ -137,7 +155,7 @@ module.exports = samples = [
   },
   {
     url: () => new Url ('file:') .set ({ drive:'g|d' }),
-    error: 'invalid drive value: "g|d"',
+    error: 'ERR_INVALID_DRIVE',
   },
 
 
@@ -208,6 +226,7 @@ module.exports = samples = [
   },
 
   // Drive letter tests
+  // REVIEW: parsing //c: as /c:
 
   {
     url: 'C|',
@@ -226,7 +245,7 @@ module.exports = samples = [
     file: null
   },
   {
-    url: new Url ('C|', { detectDrive:true }),
+    url: () => new Url ('C|', { parser:'file' }),
     scheme: null,
     drive: 'C|',
     root: null,
@@ -234,47 +253,24 @@ module.exports = samples = [
     file: null
   },
   {
-    // NB!! Parsing //c: as /c:
-    url: new Url ('http://C|', { detectDrive:true }),
-    drive: 'C|',
-    root: null,
-    host: null,
-    file: null
-  },
-  {
-    url: new Url ('http://C|', { detectDrive:false }),
+    url: 'http://C|',
     drive: null,
     root: null,
     host: 'C|',
     file: null
   },
   {
-    url: new Url ('/D:/') .goto ('http:C|/'),
+    url: () => new Url ('/D:/') .goto ('http:C|/'),
     drive: null,
     root: null,
     host: null,
     file: null
   },
   {
-    url: new Url ('http://foo@localhost/D:/'),
+    url: 'http://foo@localhost/D:/',
     drive: null,
     root: '/',
     host:'localhost',
-    file: null
-  },
-  {
-    url: new Url ('http+git:\\\\foo@localhost\\D:\\', myconf),
-    drive: null,
-    root: '/',
-    host:'localhost',
-    file: null
-  },
-  {
-    url: new Url ('file:\\\\foo@localhost\\D:\\', myconf),
-    drive: 'D:',
-    root: '/',
-    host:'localhost',
-    port: null,
     file: null
   },
 
@@ -282,11 +278,18 @@ module.exports = samples = [
   // Auth parser tests
 
   {
-    url: 'http://[foo]',
-    user: null,
-    pass: null,
-    host: '[foo]',
+    url: () => new Url ('http://f:/c'),
+    scheme: 'http',
+    host: 'f',
     port: null
+  },
+  {
+    url: 'http://[foo]',
+    error: 'Invalid IPv6 address foo'
+  },
+  {
+    url: 'http://foo:1:1',
+    error: 'ERR_INVALID_PORT'
   },
   {
     url: 'httP://[as]@foo:1',
@@ -296,42 +299,26 @@ module.exports = samples = [
     port: 1
   },
   {
-    url: () => new Url ('http://f:/c'),
-    scheme: 'http',
-    host: 'f',
-    port: null
+    url: 'http://[as@foo:1]:1',
+    error: 'ERR_INVALID_PORT'
+  },
+  {
+    url: 'http://[as:foo:1]:0',
+    error: 'Invalid IPv6 address as:foo:1'
+  },
+  {
+    url: () => new RawUrl ('http://[as:f]@oo:19=0@bii'),
+    pass: 'f]@oo:19=0',
+    user: '[as',
+    host: 'bii',
+    href: 'http://%5Bas:f%5D%40oo%3A19%3D0@bii'
   },
 
 
   // TODO
   /*
   {
-    url: 'http://[as@foo:1]:1',
-    host: '',
-    user: '',
-    pass: '',
-    port: ''
-  },
-  {
-    url: 'http://[as:foo@:1]:0',
-    host:'',
-    user:'',
-    pass:'',
-    port:''
-  },
-  {
     url: 'http://[as:foo:0',
-    host:'',
-    user:'',
-    pass:'',
-    port:''
-  },
-  {
-    url: 'http://[as:f]@oo:19=0@bii',
-    host:'',
-    user:'',
-    pass:'',
-    port:''
   },
   */
 
@@ -357,15 +344,16 @@ module.exports = samples = [
   , href: 'http://example.com//foo//bar/'
   },
 
+
   // Other tests
 
   {
     url: () => new Url ('//[user@foo]@foo/boo') .set ({ port:'iii' }),
-    error: 'invalid port value: "iii"',
+    error: 'ERR_INVALID_PORT',
   },
   {
     url: () => new Url ('#foo') .set ({ port:'1' }),
-    error: 'cannot set { port: "1" } on hostless URL <#foo>',
+    error: 'ERR_NOAUTH',
   },
   {
     url: '//[user@foo]@foo/boo',
@@ -395,11 +383,114 @@ module.exports = samples = [
     port: null,
   },
 
-  // 'Force' tests
+
+  // PercentCoding Tests
   
   {
-    url: new Url ('http:www.example.com') .force (),
-    href: 'http://www.example.com' // Question, should force also add root?
+    url: () =>
+      new Url ('http://foo/🌿🦍/%42?%F0%9F%8C%BF')
+      .set ({ hash:'%43' }),
+    file: 'B',
+    hash: '%2543',
+    query: '🌿'
+  },
+  {
+    url: () => {
+      var r = new Url ('http://foo/🌿🦍/%42?%F0%9F%8C%BF')
+      return new RawUrl (r) .set ({ hash: '%43' })
+    },
+    file: 'B',
+    hash: '%43',
+    query: '🌿'
+  },
+  {
+    url: () => 
+      new Url (null) 
+        .set ({ host: '%66%6f%6f', percentCoded:true })
+        .set ({ file: 'file-with-%-sign' }),
+    host: 'foo',
+    file: 'file-with-%-sign',
+    href: '//foo/file-with-%25-sign',
+    percentCoded: false,
+  },
+  {
+    url: () => new RawUrl (null) 
+      .set ({ host: '%66%6f%6f' })
+      .set ({ file: 'file-with-%-sign', percentCoded:false }),
+    host: '%66%6f%6f',
+    file: 'file-with-%25-sign',
+    href: '//%66%6f%6f/file-with-%25-sign',
+    percentCoded: true,
   },
 
+  
+  // Resolve tests
+
+  {
+    _: 'See if resolve works',
+    url: () => new Url ('http:file.txt') .resolve ('http://host/'),
+    href: 'http://host/file.txt'
+  },
+  {
+    _: 'See if it works with different percentCoding settings',
+    url: () => new Url ('http:with-%25-sign.txt') .resolve ('http://%66%6f%6f'),
+    href: 'http://foo/with-%25-sign.txt'
+  },
+  {
+    url: () =>
+      new RawUrl ('with-%25-sign/')
+      .resolve (new Url('http:/%66-%25-%6f%6f/')),
+    href: 'http:/f-%25-oo/with-%25-sign/',
+    percentCoded: true,
+    dirs: [ 'f-%25-oo', 'with-%25-sign.d' ],
+  },
+  {
+    _: '... And respects schemes',
+    url: () => new Url ('http:file.txt') .resolve ('file://host/'),
+    href: 'http:file.txt'
+  },
+  {
+    _: '... And works with host-relative URLs',
+    url: () => new Url ('htTP:file.txt#hash') .resolve ('HTtp://host/dir/'),
+    dirs: [ 'dir' ],
+    href: 'htTP://host/dir/file.txt#hash',
+  },
+
+
+  // Force tests
+  
+  {
+    url: ( ) => new Url ('http:www.example.com') .force (),
+    href: 'http://www.example.com' // Force does not add root!
+  },
+  {
+    url: () => new Url ('http:foo/bar/baz'). force (),
+    host: 'foo',
+    dirs: ['bar'],
+    file: 'baz',
+  },
+  {
+    url: () => new Url ('http:/jack@foo/bar/baz'). force (),
+    user: 'jack',
+    pass: null,
+    host: 'foo',
+    dirs: ['bar'],
+    file: 'baz',
+  },
+  {
+    url: () => new Url ('http:////jack@foo/'). force (),
+    user: 'jack',
+    pass: null,
+    host: 'foo',
+  },
+  {
+    url: () => new Url ('http:////jack@foo'). force (),
+    user: 'jack',
+    pass: null,
+    host: 'foo',
+  },
+  {
+    url: () => new Url ('http:////'). force (),
+    error: 'ERR_FORCE_FAILED',
+  },
 ]
