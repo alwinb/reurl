@@ -6,7 +6,7 @@ const log = console.log.bind (console)
 // Test 
 // ----
 
-const testData = require ('../git-ignore/urltestdata.json')
+const testData = require ('../test/data/urltestdata.json')
 
 class WebTests extends Tests {
   compactInput (input) { return input.href }
