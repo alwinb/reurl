@@ -180,7 +180,7 @@ Converts an Url object to a string. Percent encodes only a minimal set of codepo
 ```javascript
 var url = new Url ('http://🌿🌿🌿/{braces}/hʌɪ')
 url.toString ()
-// => 'http://🌿🌿🌿/%7Bitem1%7D/hʌɪ'
+// => 'http://🌿🌿🌿/%7Bbraces%7D/hʌɪ'
 ```
 
 </details>
@@ -191,7 +191,7 @@ Converts an Url object to a string that only contains ASCII code points.  Non-AS
 ```javascript
 var url = new Url ('http://🌿🌿🌿/{braces}/hʌɪ')
 url.toASCII ()
-// => 'http://xn--8h8haa/%7Bitem1%7D/h%CA%8C%C9%AA'
+// => 'http://xn--8h8haa/%7Bbraces%7D/h%CA%8C%C9%AA'
 ```
 </details>
 <details><summary>url.tokens ()</summary>
