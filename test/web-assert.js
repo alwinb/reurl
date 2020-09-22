@@ -36,22 +36,8 @@ function runTest (test) {
   // SHould it?
   // var resolved = base.goto (test.input) .force() .normalise()
 
-  resolved = normaliseFileUrl (resolved)
   resolved._href = resolved.href
   return resolved
-}
-
-// This is functionality that I am not sure I want in the lib,
-// and so, I do it here to make the failing tests pass
-
-function normaliseFileUrl (url) {
-  if (url.scheme !== 'file') return url
-  if (url.drive) return url.set ({ host: '' })
-  const dirs = []
-  const it = (url.dirs||[])[Symbol.iterator]()
-  for (let x of it)
-    if (x !== '') dirs.push (x, ...it)
-  return url.set ({ dirs })
 }
 
 // TODO validate 'dirs' to be iterable
