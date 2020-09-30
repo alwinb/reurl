@@ -10,6 +10,9 @@ const log = console.log.bind (console)
 // Quick
 // -----
 
+var r = new Url ('non-spec:/.//') .normalize ()
+pr (r)
+
 var r = new Url ('http://example.com/foo/bar/baz?q#h')
 pr (r)
 
