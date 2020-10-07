@@ -48,6 +48,7 @@ class TestRunner {
   }
 
   run (amount = Infinity) {
+    const start = new Date ()
     let fail = 0, pass = 0, total = 0
     for (let input of this.tests) if (this._filter (input)) {
       total ++
@@ -88,10 +89,12 @@ class TestRunner {
       }
     }
 
+    const dt = new Date - start
     total = fail + pass
     log ('\n\n------------ Results -------------\npassed ' + pass + ' of ' + total + ' tests')
     log ('failed ' + fail + ' of ' + total + ' tests')
     log ('pass rate ' + Math.floor(pass / total * 100) + '%')
+    log (`${dt/1000}s`)
     return fail === 0
   }
 
