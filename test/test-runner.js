@@ -69,12 +69,12 @@ class TestRunner {
         log ('\n----------- Test failed ----------')
         this.log (this.compactInput (input))
         if (error) {
-          this.log ('threw:', this.compactError (error))
+          this.log ('threw: ', this.compactError (error))
           log ('assert: ', assertionFailures, '\n')
           log (util.inspect ({ testCase: input, threw:error }, { depth:11 }))
         }
         else {
-          this.log ('result:', this.compactOutput (output))
+          this.log ('result: ', this.compactOutput (output))
           log ('assert: ', assertionFailures, '\n')
           log (util.inspect ({ testCase: input, returned:output }, { depth:11 }))
         }
