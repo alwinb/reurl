@@ -1,6 +1,6 @@
 # URL Strings
 
-This is a very preliminary attempt to formalise the parser/grammar that I use in the library. This is based on notes that I made while working on it. It is incomplete and there may be mistakes, but it **should** be in agreement with the WhatWG URL Standard. 
+This is a preliminary attempt at a formal grammar of URLs as they are are specified in the WhatWG URL Standard. It is still incomplete and there may be mistakes, but it **should** be in agreement with the standard. 
 
 ## Base Grammar
 

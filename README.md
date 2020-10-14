@@ -41,7 +41,7 @@ An **Authority** is a named tuple (_username_, _password_, _hostname_, _port_) w
   - _username_ and _password_ are either null or a string,
   - port is either null or an integer in the range 0 to 2<sup>16</sup>–1. 
 
-Autorities are subject to the following constraints:
+Authorities are subject to the following constraints:
 
   - if _password_ is a string, then _username_ is a string.  
   - if _hostname_ is the empty string, then _port_, _username_ and _password_ are null. 
@@ -61,17 +61,17 @@ By the definition above, URLs are a special case of ordered lists, where
 the ordering reflects the hierarchical structure of the URL. 
 This makes it relatively easy to define and implement the key operations on URLs, as follows:
 
-* The **type** of an URL (type _url_) is defined to be:
+* The **order** of an URL (ord _url_) is defined to be:
   - **fragment** if _url_ is the empty URL.
   - The type of its first token otherwise. 
 
-* The **type-limited prefix** (_url1_ upto _t_) is defined to be
+* The **order-limited prefix** (_url1_ upto _t_) is defined to be
   - the _shortest_ prefix of _url1_ that contains
     - all tokens of _url1_ with a type strictly smaller than _t_ and
     - all **directory** tokens with a type weakly smaller than _t_. 
 
 * The **goto** operation (_url1_ goto _url2_) is defined to return:
-  - the _shortest_ URL that has _url1_ upto (type _url2_) as a prefix and _url2_ as a postfix. 
+  - the _shortest_ URL that has _url1_ upto (ord _url2_) as a prefix and _url2_ as a postfix. 
 
 * The **_nonstrict_ goto** operation (_url1_ goto' _url2_) is defined to be (_url1_ goto _url2'_) where
   - _url2'_ is _url2_ with the **scheme** token removed if it equals the **scheme** token of _url1_, or _url2_ otherwise. 
@@ -81,7 +81,7 @@ This makes it relatively easy to define and implement the key operations on URLs
 
 Some properties of URLs and their operations:
 
-- type (url1 goto url2) is the least type of {type url1, type url2}. 
+- ord (url1 goto url2) is the least type of {ord url1, ord url2}. 
 - (url1 goto url2) goto url3 = url1 goto (url2 goto url3). 
 - empty goto url2 = url2. 
 - url1 goto empty = url1 is **not** true in general (the fragment is dropped). 
