@@ -53,14 +53,26 @@ module.exports = samples = [
     error: 'ERR_FORBIDDEN_HOST_CODEPOINT',
   },
   {
-    url: () => new RawUrl ('http:') .set ({ host:'%66%6f%6f' }),
-    href: 'http://%66%6f%6f',
+    comment: 'RawUrl with opaque host preserves percent codes',
+    url: () => new RawUrl ('sc:') .set ({ host:'%66%6f%6f', file:'%62%61%72' }),
+    href: 'sc://%66%6f%6f/%62%61%72',
     host: '%66%6f%6f',
+    file: '%62%61%72',
     percentCoded: true
   },
   {
-    url: () => new Url ('http:') .set ({ host:'%66%6f%6f', percentCoded:true }),
+    comment: 'RawUrl-special parses host and thus decodes percent codes in host only',
+    url: () => new RawUrl ('http:') .set ({ host:'%66%6f%6f', file:'%62%61%72' }),
+    href: 'http://foo/%62%61%72',
+    host: 'foo',
+    file: '%62%61%72',
+    percentCoded: true
+  },
+  {
+    url: () => new Url ('http:') .set ({ host:'%66%6f%6f', file:'%62%61%72', percentCoded:true }),
+    href: 'http://foo/bar',
     host:'foo',
+    file: 'bar',
     percentCoded: false
   },
   {
@@ -281,7 +293,7 @@ module.exports = samples = [
     url: () => new Url ('http://f:/c'),
     scheme: 'http',
     host: 'f',
-    port: null
+    port: ''
   },
   {
     url: 'http://[foo]',
