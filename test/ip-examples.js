@@ -1,6 +1,5 @@
 const log = console.log.bind (console)
-const ip4 = require ('../lib/ipv4')
-const ip6 = require ('../lib/ipv6')
+const { ipv4, ipv6 } = require ('../lib/host')
 const assert = require ('assert').strict
   assert.equals = assert.equal
   assert.deepEquals = assert.deepEqual
@@ -30,7 +29,7 @@ function testIp4 () {
   head ('Ipv4 examples')
   ip4Samples.forEach (s => log (
     ' >', s,
-    '\n=>', ip4.normalize (s), '\n'
+    '\n=>', ipv4.normalise (s), '\n'
   ))
 }
 
@@ -56,14 +55,14 @@ FF01::101
 
 function testIp6 () {
   head ('Ipv6 examples')
-  const { parse, print, normalize } = ip6
+  const { parse, print, normalise } = ipv6
 
   assert.throws ($ => parse ('0::0::0'))
   assert.throws ($ => parse ('::1.2.3.'))
 
   ip6Samples.forEach (s => log (
     ' >', s,
-    '\n=>', normalize (s), '\n'
+    '\n=>', normalise (s), '\n'
   ))
 }
 

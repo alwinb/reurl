@@ -18,3 +18,6 @@ dist/:
 clean:
 	@ echo "Removing dist/ directory"
 	@ test -d dist/ && rm -r dist/ || exit 0
+
+# tests:
+# 	https://raw.githubusercontent.com/web-platform-tests/wpt/master/url/resources/urltestdata.json
