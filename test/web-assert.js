@@ -16,8 +16,8 @@ class WebTests extends Tests {
 const testSet = new WebTests (testData, runTest)
   .filter (input => input && typeof input === 'object')
 
-  .assert ('equal failure', (input, output, error) => {
-    return !!input.failure === !!error })
+  .assert ('equal failure', (input, output, error) =>
+    !!input.failure === !!error )
 
   .assert ('equal href', (input, output, error) => {
     return input.failure || input.href === output.href
@@ -25,17 +25,7 @@ const testSet = new WebTests (testData, runTest)
 
 
 function runTest (test) {
-  let base = new RawUrl (test.base) .force ()
-  let input = new RawUrl (test.input, { parser:base.scheme })
-  let resolved = input.resolve (base) .force () .normalise ()
-  // let decoded = new Url (resolved)
-  // resolved.set ({ host:decoded.host })
-
-  // TODO this should be the same?
-  // No because the cannot-be-base check is not done in 'goto'
-  // SHould it?
-  // var resolved = base.goto (test.input) .force() .normalise()
-
+  let resolved = RawUrl.parseAndResolve (test.input, test.base)
   resolved._href = resolved.href
   return resolved
 }

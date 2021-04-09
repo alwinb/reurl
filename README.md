@@ -380,7 +380,17 @@ TODO
 </details>
 <details><summary>url.file</summary>
 
-TODO
+A getter that returns the file part of the path of `url` as a string, or null if no such part is present.
+
+```javascript
+new Url ('/foo/bar') .file
+// => 'bar'
+```
+
+```javascript
+new Url ('/foo/') .file
+// => null
+```
 
 </details>
 <details><summary>url.query</summary>
@@ -571,6 +581,10 @@ new Url ('http://foo/bar') .force () .toString ()
 new Url ('http:///foo/bar') .force () .toString ()
 // => 'http://foo/bar'
 ```
+</details>
+<details><summary>url.forceResolve (baseUrl)</summary>
+
+Equivalent to `url .resolve (baseUrl) .force ()`
 </details>
 
 ## License
