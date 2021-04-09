@@ -8,9 +8,9 @@ sources = $(addprefix lib/, $(files))
 
 all: dist/reurl.min.js
 
-dist/reurl.min.js: dist/ $(sources)
+dist/reurl.min.js: dist/ package.json $(sources)
 	@ echo "Making a minified browser bundle"
-	@ browserify lib/browser.js | terser -cm > dist/reurl.min.js
+	@ esbuild --bundle --minify lib/browser.js > dist/reurl.min.js
 
 dist/:
 	@ mkdir dist/
