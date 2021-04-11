@@ -1,4 +1,4 @@
-const { Url, RawUrl } = require ('../../lib')
+const { Url, RawUrl } = require ('../lib')
 
 module.exports = samples = [
 
@@ -147,9 +147,7 @@ module.exports = samples = [
     file: null,
   },
   {
-    // TODO is indeed /d| the serialization I like for [[DRIVE, 'd|']] ?
-    // NB currently all of `d|`, `/d|`, `//d|` are parsed as such. 
-    url: () => new Url () .set ({ drive:'d|' }), // implies root:true
+    url: () => new Url () .set ({ drive:'d|' }),
     href: "/d|",
     scheme: null,
     host: null,
@@ -281,6 +279,38 @@ module.exports = samples = [
     root: '/',
     host:'localhost',
     file: null
+  },
+  {
+    url: () => new Url ('d|', { parser:'file' }),
+    href: "/d|",
+    scheme: null,
+    host: null,
+    drive: 'd|',
+    root: null,
+  },
+  {
+    url: () => new Url ('/d|', { parser:'file' }),
+    href: "/d|",
+    scheme: null,
+    host: null,
+    drive: 'd|',
+    root: null,
+  },
+  {
+    url: () => new Url ('//d|', { parser:'file' }),
+    href: "///d|",
+    scheme: null,
+    host: '',
+    drive: 'd|',
+    root: null,
+  },
+  {
+    url: () => new Url ('///d|', { parser:'file' }),
+    href: "///d|",
+    scheme: null,
+    host: '',
+    drive: 'd|',
+    root: null,
   },
 
 

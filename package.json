@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "node test/run.js"
+    "test": "make test"
   },
   "repository": {
     "type": "git",
@@ -15,8 +15,11 @@
   },
   "keywords": [
     "URL",
+    "WHATWG URL Standard",
     "relative URL",
+    "reference resolution",
     "normalize",
+    "resolve",
     "parser"
   ],
   "author": "Alwin Blok",

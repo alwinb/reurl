@@ -1,6 +1,6 @@
 const { Url, RawUrl } = require ('../lib')
 const log = console.log.bind (console)
-const samples = require ('./data/samples')
+const samples = require ('./samples')
 const Tests = require ('./test-runner')
 
 // Set up tests
