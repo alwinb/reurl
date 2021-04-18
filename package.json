@@ -1,17 +1,17 @@
 {
   "name": "reurl",
-  "version": "1.0.0-beta",
+  "version": "1.0.0-rc",
   "description": "URL manipulation library",
   "main": "lib/index.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
     "test": "make test"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alwinb/reurl.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alwinb/reurl/issues"
   },
   "keywords": [
     "URL",
@@ -24,10 +24,6 @@
   ],
   "author": "Alwin Blok",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/alwinb/reurl/issues"
-  },
-  "homepage": "https://github.com/alwinb/reurl#readme",
   "dependencies": {
     "spec-url": "^1.1.0"
   }
