@@ -1,4 +1,4 @@
-const { Url, RawUrl } = require ('../../lib')
+const { Url, RawUrl } = require ('../lib')
 
 module.exports = samples = [
 
@@ -50,7 +50,7 @@ module.exports = samples = [
   },
   {
     url: () => new Url ('http:') .set ({ host:'%66%6f%6f' }), // NB percentcoded:false is implied!
-    error: 'ERR_FORBIDDEN_HOST_CODEPOINT',
+    error: /Invalid domain/,
   },
   {
     comment: 'RawUrl with opaque host preserves percent codes',
@@ -77,7 +77,7 @@ module.exports = samples = [
   },
   {
     url: () => new Url ('http:') .set ({ host:'f#oo' }),
-    error: 'ERR_FORBIDDEN_HOST_CODEPOINT',
+    error: /Invalid domain/,
   },
 
 
@@ -147,9 +147,7 @@ module.exports = samples = [
     file: null,
   },
   {
-    // TODO is indeed /d| the serialization I like for [[DRIVE, 'd|']] ?
-    // NB currently all of `d|`, `/d|`, `//d|` are parsed as such. 
-    url: () => new Url () .set ({ drive:'d|' }), // implies root:true
+    url: () => new Url () .set ({ drive:'d|' }),
     href: "/d|",
     scheme: null,
     host: null,
@@ -167,7 +165,7 @@ module.exports = samples = [
   },
   {
     url: () => new Url ('file:') .set ({ drive:'g|d' }),
-    error: 'ERR_INVALID_DRIVE',
+    error: /Invalid drive/,
   },
 
 
@@ -184,9 +182,9 @@ module.exports = samples = [
   },
   {
     url: () => new Url ('file://c:') .set ({ file:'foo.txt' }),
-    href: 'file:/c:/foo.txt',
+    href: 'file:///c:/foo.txt',
     scheme: 'file',
-    host: null,
+    host: '',
     drive: 'c:',
     root: '/',
     file: 'foo.txt',
@@ -202,9 +200,9 @@ module.exports = samples = [
   },
   {
     url: () => new Url ('file://c:') .set ({ root:true, file:'foo.txt' }),
-    href: 'file:/c:/foo.txt',
+    href: 'file:///c:/foo.txt',
     scheme: 'file',
-    host: null,
+    host: '',
     drive: 'c:',
     root: '/',
     file: 'foo.txt',
@@ -238,7 +236,7 @@ module.exports = samples = [
   },
 
   // Drive letter tests
-  // REVIEW: parsing //c: as /c:
+  // NB: parsing //c: as ///c:
 
   {
     url: 'C|',
@@ -266,10 +264,7 @@ module.exports = samples = [
   },
   {
     url: 'http://C|',
-    drive: null,
-    root: null,
-    host: 'C|',
-    file: null
+    error: 'ERR_INVALID_AUTH',
   },
   {
     url: () => new Url ('/D:/') .goto ('http:C|/'),
@@ -285,6 +280,38 @@ module.exports = samples = [
     host:'localhost',
     file: null
   },
+  {
+    url: () => new Url ('d|', { parser:'file' }),
+    href: "/d|",
+    scheme: null,
+    host: null,
+    drive: 'd|',
+    root: null,
+  },
+  {
+    url: () => new Url ('/d|', { parser:'file' }),
+    href: "/d|",
+    scheme: null,
+    host: null,
+    drive: 'd|',
+    root: null,
+  },
+  {
+    url: () => new Url ('//d|', { parser:'file' }),
+    href: "///d|",
+    scheme: null,
+    host: '',
+    drive: 'd|',
+    root: null,
+  },
+  {
+    url: () => new Url ('///d|', { parser:'file' }),
+    href: "///d|",
+    scheme: null,
+    host: '',
+    drive: 'd|',
+    root: null,
+  },
 
 
   // Auth parser tests
@@ -297,11 +324,11 @@ module.exports = samples = [
   },
   {
     url: 'http://[foo]',
-    error: 'Invalid IPv6 address foo'
+    error: 'Invalid IPv6 address: [foo]'
   },
   {
     url: 'http://foo:1:1',
-    error: 'ERR_INVALID_PORT'
+    error: 'ERR_INVALID_AUTH'
   },
   {
     url: 'httP://[as]@foo:1',
@@ -312,11 +339,11 @@ module.exports = samples = [
   },
   {
     url: 'http://[as@foo:1]:1',
-    error: 'ERR_INVALID_PORT'
+    error: 'Invalid IPv6 address: [as@foo:1]'
   },
   {
     url: 'http://[as:foo:1]:0',
-    error: 'Invalid IPv6 address as:foo:1'
+    error: 'Invalid IPv6 address: [as:foo:1]'
   },
   {
     url: () => new RawUrl ('http://[as:f]@oo:19=0@bii'),
@@ -361,11 +388,11 @@ module.exports = samples = [
 
   {
     url: () => new Url ('//[user@foo]@foo/boo') .set ({ port:'iii' }),
-    error: 'ERR_INVALID_PORT',
+    error: /Invalid port/,
   },
   {
     url: () => new Url ('#foo') .set ({ port:'1' }),
-    error: 'ERR_NOAUTH',
+    error: /host-less URL cannot have/,
   },
   {
     url: '//[user@foo]@foo/boo',
@@ -473,7 +500,7 @@ module.exports = samples = [
   
   {
     url: ( ) => new Url ('http:www.example.com') .force (),
-    href: 'http://www.example.com' // Force does not add root!
+    href: 'http://www.example.com/' // Force does add root!
   },
   {
     url: () => new Url ('http:foo/bar/baz'). force (),
@@ -503,6 +530,6 @@ module.exports = samples = [
   },
   {
     url: () => new Url ('http:////'). force (),
-    error: 'ERR_FORCE_FAILED',
+    error: 'Cannot force <http:////>',
   },
 ]

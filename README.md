@@ -41,7 +41,7 @@ An **Authority** is a named tuple (_username_, _password_, _hostname_, _port_) w
   - _username_ and _password_ are either null or a string,
   - port is either null or an integer in the range 0 to 2<sup>16</sup>–1. 
 
-Authorities are subject to the following constraints:
+Autorities are subject to the following constraints:
 
   - if _password_ is a string, then _username_ is a string.  
   - if _hostname_ is the empty string, then _port_, _username_ and _password_ are null. 
@@ -61,17 +61,17 @@ By the definition above, URLs are a special case of ordered lists, where
 the ordering reflects the hierarchical structure of the URL. 
 This makes it relatively easy to define and implement the key operations on URLs, as follows:
 
-* The **order** of an URL (ord _url_) is defined to be:
+* The **type** of an URL (type _url_) is defined to be:
   - **fragment** if _url_ is the empty URL.
   - The type of its first token otherwise. 
 
-* The **order-limited prefix** (_url1_ upto _t_) is defined to be
+* The **type-limited prefix** (_url1_ upto _t_) is defined to be
   - the _shortest_ prefix of _url1_ that contains
     - all tokens of _url1_ with a type strictly smaller than _t_ and
     - all **directory** tokens with a type weakly smaller than _t_. 
 
 * The **goto** operation (_url1_ goto _url2_) is defined to return:
-  - the _shortest_ URL that has _url1_ upto (ord _url2_) as a prefix and _url2_ as a postfix. 
+  - the _shortest_ URL that has _url1_ upto (type _url2_) as a prefix and _url2_ as a postfix. 
 
 * The **_nonstrict_ goto** operation (_url1_ goto' _url2_) is defined to be (_url1_ goto _url2'_) where
   - _url2'_ is _url2_ with the **scheme** token removed if it equals the **scheme** token of _url1_, or _url2_ otherwise. 
@@ -81,7 +81,7 @@ This makes it relatively easy to define and implement the key operations on URLs
 
 Some properties of URLs and their operations:
 
-- ord (url1 goto url2) is the least type of {ord url1, ord url2}. 
+- type (url1 goto url2) is the least type of {type url1, type url2}. 
 - (url1 goto url2) goto url3 = url1 goto (url2 goto url3). 
 - empty goto url2 = url2. 
 - url1 goto empty = url1 is **not** true in general (the fragment is dropped). 
@@ -91,12 +91,39 @@ Some properties of URLs and their operations:
 
 ## API
 
+### Overview
+
+The ReUrl library exposes an Url class and a RawUrl class with an identical API. Their only difference is in their handling of percent escape sequences. 
+
+<details><summary>Url</summary>
+
+For Url objects the URL parser **decodes** percent escape sequences, getters report percent-decoded values and the _set_ method assumes that its input is percent-decoded unless explicitly specified otherwise. 
+
+```javascript
+var url = new Url ('//host/%61bc')
+url.file // => 'abc'
+url = url.set ({ query:'%def' })
+url.query // => '%def'
+url.toString () // => '//host/abc?%25def'
+```
+
+</details>
+<details><summary>RawUrl</summary>
+
+For RawUrl objects the parser **preserves** percent escape sequences, getters report values with percent-escape-sequenes preserved and _set_ expects values in which % signs start a percent-escape sequence. 
+
+```javascript
+var url = new RawUrl ('//host/%61bc')
+url.file // => '%61bc'
+url = url.set ({ query:'%25%64ef' })
+url.query // => '%25%64ef'
+url.toString () // => '//host/%61bc?%25%64ef'
+```
+</details>
+
+Url and RawUrl objects are immutable. Modifying URLs is acomplished through methods that return new Url and/ or RawUrl objects. 
+
 ### Constructors
-
-The ReUrl library exposes an Url class. Url objects are immutable. Changes to the fields are ignored and methods return new objects. 
-
-In addition it exposes a RawUrl class with an identical API. The only difference is that Url objects _decode_ percent escape sequences whereas RawUrl objects _preserve_ them. 
-
 
 <details><summary>new Url (string \[, conf])</summary>
 
@@ -104,11 +131,11 @@ Construct a new Url object from an URL-string. The optional _conf_ argument, if 
 
 ```javascript
 var url = new Url ('sc:/foo/bar')
-console.log ([...url.tokens ()])
-// => [ ['scheme', 'sc'], ['root', '/'], ['dir', 'foo'], ['file', 'bar'] ]
+console.log (url)
+// => Url { scheme: 'sc', root: '/', dirs: [ 'foo' ], file: 'bar' }
 ```
 </details>
-<details><summary>new Url (object \[, conf])</summary>
+<details><summary>new Url (object)</summary>
 
 Construct a new Url object from any object, possibly an Url object itself. The optional conf argument, if present, must be a configuration object as described below. 
 Throws an error if the object cannot be coerced into a valid URL. 
@@ -128,48 +155,250 @@ Drive-letters are only supported in `file` URL-strings, and backslash separators
 
 ```javascript
 var url = new Url ('/c:/foo\\bar', { parser:'file' })
-console.log ([...url.tokens ()])
-// => [ ['drive', 'c:'], ['root', '/'], ['dir', 'foo'], ['file', 'bar'] ]
+console.log (url)
+// => Url { drive: 'c:', root: '/', dirs: [ 'foo' ], file: 'bar' }
 ```
 ```javascript
 var url = new Url ('/c:/foo\\bar', { parser:'http' })
-console.log ([...url.tokens ()])
-// => [ ['root', '/'], ['dir', 'c:'], ['dir', 'foo'], ['file', 'bar'] ]
+console.log (url)
+// => Url { root: '/', dirs: [ 'c:', 'foo' ], file: 'bar' }
 ```
 ```javascript
 var url = new Url ('/c:/foo\\bar')
-console.log ([...url.tokens ()])
-// => [ ['root', '/'], ['dir', 'c:'], ['file', 'foo\\bar'] ]
+console.log (url)
+// => Url { root: '/', dirs: [ 'c:', 'foo' ], file: 'bar' }
 ```
 </details>
 
-### PercentCoding
 
-<details><summary>Url</summary>
+### Properties
 
-For Url objects the URL parser **decodes** percent-escape-sequences, getters report percent-decoded values and the _set_ method assumes that its input is percent-decoded unless explicitly specified otherwise. 
+Url and RawUrl objects have the following **optional** properties. 
+
+<details><summary>url.scheme</summary>
+
+The scheme of an URL as a string. This property is absent if no scheme part is present, e.g. in scheme-relative URLs. 
 
 ```javascript
-var url = new Url ('//host/%61bc')
-url.file // => 'abc'
-url = url.set ({ query:'%def' })
-url.query // => '%def'
-url.toString () // => '//host/abc?%25def'
+new Url ('http://foo?search#baz') .scheme
+// => 'http'
 ```
-
-</details>
-<details><summary>RawUrl</summary>
-
-For RawUrl objects the parser **preserves** percent-escape-sequences, getters report values with percent-escape-sequenes preserved and _set_ expects values in which % signs start a percent-escape sequence. 
 
 ```javascript
-var url = new RawUrl ('//host/%61bc')
-url.file // => '%61bc'
-url = url.set ({ query:'%25%64ef' })
-url.query // => '%25%64ef'
-url.toString () // => '//host/%61bc?%25%64ef'
+new Url ('/abc/?') .scheme
+// => undefined
 ```
 </details>
+<details><summary>url.user</summary>
+
+The username of an URL as a string. This property is absent if the URL does not have an authority or does not have credentials. 
+
+```javascript
+new Url ('http://joe@localhost') .user
+// => 'joe'
+```
+
+```javascript
+new Url ('//host/abc') .user
+// => undefined
+```
+</details>
+<details><summary>url.pass</summary>
+
+A property for the password of an URL as a string. 
+This property is absent if the URL does not have an authority, credentials or password. 
+
+```javascript
+new Url ('http://joe@localhost') .pass
+// => undefined
+```
+
+```javascript
+new Url ('http://host') .pass
+// => undefined
+```
+
+```javascript
+new Url ('http://joe:pass@localhost') .pass
+// => 'pass'
+```
+
+```javascript
+new Url ('http://joe:@localhost') .pass
+// => ''
+```
+</details>
+<details><summary>url.host</summary>
+
+A property for the hostname of an URL as a string,
+This property is absent if the URL does not have an authority. 
+
+```javascript
+new Url ('http://localhost') .host
+// => 'localhost'
+```
+
+```javascript
+new Url ('http:foo') .host
+// => undefined
+```
+
+```javascript
+new Url ('/foo') .host
+// => undefined
+```
+</details>
+<details><summary>url.port</summary>
+
+The port of (the authority part of) of an URL, being either a number, or the empty string if present. The property is absent if the URL does not have an authority or a port. 
+
+```javascript
+new Url ('http://localhost:8080') .port
+// => 8080
+```
+
+```javascript
+new Url ('foo://host:/foo') .port
+// => ''
+```
+
+```javascript
+new Url ('foo://host/foo') .port
+// => undefined
+```
+</details>
+<details><summary>url.root</summary>
+
+A property for the path-root of an URL. Its value is `'/'` if the URL has an absolute path. The property is absent otherwise.
+
+```javascript
+new Url ('foo://localhost?q') .root
+// => undefined
+```
+
+```javascript
+new Url ('foo://localhost/') .root
+// => '/'
+```
+
+```javascript
+new Url ('foo/bar')
+// => Url { dirs: [ 'foo' ], file: 'bar' }
+```
+
+```javascript
+new Url ('/foo/bar')
+// => Url { root: '/', dirs: [ 'foo' ], file: 'bar' }
+```
+
+It is possible for file URLs to have a drive, but not a root. 
+
+```javascript
+new Url ('file:/c:')
+// => Url { scheme: 'file', drive: 'c:' }
+```
+
+```javascript
+new Url ('file:/c:/')
+// => Url { scheme: 'file', drive: 'c:', root: '/' }
+```
+</details>
+<details><summary>url.drive</summary>
+
+A property for the drive of an URL as a string, if present. 
+Note that the presence of drives depends on the parser settings and/ or URL scheme. 
+
+```javascript
+new Url ('file://c:') .drive
+// => 'c:'
+```
+
+```javascript
+new Url ('http://c:') .drive
+// => undefined
+```
+
+```javascript
+new Url ('/c:/foo/bar', 'file') .drive
+// => 'c:'
+```
+
+```javascript
+new Url ('/c:/foo/bar') .drive
+// => undefined
+```
+</details>
+<details><summary>url.dirs</summary>
+
+If present, a nonempty array of strings. Note that the trailing slash determines whether a component is part of the **dirs** or set as the **file** property. 
+
+```javascript
+new Url ('/foo/bar/baz/').dirs
+// => [ 'foo', 'bar', 'baz' ]
+```
+
+```javascript
+new Url ('/foo/bar/baz').dirs
+// => [ 'foo', 'bar' ]
+```
+
+</details>
+<details><summary>url.file</summary>
+
+If present, a non-empty string.
+
+```javascript
+new Url ('/foo/bar/baz') .file
+// => 'baz'
+```
+
+```javascript
+new Url ('/foo/bar/baz/') .file
+// => undefined
+```
+
+</details>
+<details><summary>url.query</summary>
+
+A property for the query part of `url` as a string,
+if present.
+
+```javascript
+new Url ('http://foo?search#baz') .query
+// => 'search'
+```
+
+```javascript
+new Url ('/abc/?') .query
+// => ''
+```
+
+```javascript
+new Url ('/abc/') .query
+// => undefined
+```
+</details>
+<details><summary>url.hash</summary>
+
+A property for the hash part of `url` as a string, 
+if present.
+
+```javascript
+new Url ('http://foo#baz') .hash
+// => 'baz'
+```
+
+```javascript
+new Url ('/abc/#') .hash
+// => ''
+```
+
+```javascript
+new Url ('/abc/') .hash
+// => undefined
+```
+</details>
+
 
 ### Conversions
 
@@ -186,7 +415,7 @@ url.toString ()
 </details>
 <details><summary>url.toASCII (), url.toJSON (), url.href</summary>
 
-Converts an Url object to a string that only contains ASCII code points.  Non-ASCII codepoints in components will be percent encoded and/ or punycoded. 
+Converts an Url object to a string that contains only ASCII code points.  Non-ASCII codepoints in components will be percent encoded and/ or punycoded. 
 
 ```javascript
 var url = new Url ('http://🌿🌿🌿/{braces}/hʌɪ')
@@ -194,260 +423,21 @@ url.toASCII ()
 // => 'http://xn--8h8haa/%7Bbraces%7D/h%CA%8C%C9%AA'
 ```
 </details>
-<details><summary>url.tokens ()</summary>
-
-Returns a token iterator for the Url, modeling the sequence of URL tokens as described in the [theory](#theory) section above. 
-
-```javascript
-[...new Url ('http://example.com/foo/bar/baz?q#h') .tokens ()]
-// => 
-// [ [ 'scheme', 'http' ],
-//   [ 'auth', { user: null, pass: null, host: 'example.com', port: null } ],
-//   [ 'root', '/' ],
-//   [ 'dir', 'foo' ],
-//   [ 'dir', 'bar' ],
-//   [ 'file', 'baz' ],
-//   [ 'query', 'q' ],
-//   [ 'hash', 'h' ] ]
-```
-</details>
 
 
-### Getters
-
-<details><summary>url.scheme</summary>
-
-A getter that returns the scheme of `url` as a string,
-or `null` if no scheme part is present (e.g. in relative URLs) . 
-
-```javascript
-new Url ('http://foo?search#baz') .scheme
-// => 'http'
-```
-
-```javascript
-new Url ('/abc/?') .scheme
-// => null
-```
-</details>
-<details><summary>url.user</summary>
-
-A getter that returns the username of `url` as a string,
-or `null` if the URL has no authority or credentials. 
-
-```javascript
-new Url ('http://joe@localhost') .user
-// => 'joe'
-```
-
-```javascript
-new Url ('//host/abc') .user
-// => null
-```
-</details>
-<details><summary>url.pass</summary>
-
-A getter that returns the password of `url` as a string,
-or `null` if the URL has no authority, credentials or password. 
-
-```javascript
-new Url ('http://joe@localhost') .pass
-// => null
-```
-
-```javascript
-new Url ('http://host') .pass
-// => null
-```
-
-```javascript
-new Url ('http://joe:pass@localhost') .pass
-// => 'pass'
-```
-
-```javascript
-new Url ('http://joe:@localhost') .pass
-// => ''
-```
-</details>
-<details><summary>url.host</summary>
-
-A getter that returns the hostname of `url` as a string,
-or `null` if no authority is present. 
-
-```javascript
-new Url ('http://localhost') .host
-// => 'localhost'
-```
-
-```javascript
-new Url ('http:foo') .host
-// => null
-```
-
-```javascript
-new Url ('/foo') .host
-// => null
-```
-</details>
-<details><summary>url.port</summary>
-
-A getter that returns the port of `url`,
-or `null` if no authority or port are present. 
-
-```javascript
-new Url ('http://localhost:8080') .port
-// => 8080
-```
-
-```javascript
-new Url ('foo://host:/foo') .port
-// => ''
-```
-
-```javascript
-new Url ('foo://host/foo') .port
-// => null
-```
-</details>
-<details><summary>url.root</summary>
-
-A getter that returns a string `'/'` if `url` has an absolute path
-or `null` otherwise.  
-It is possible for file URLs to have a drive, but not a root. 
-
-```javascript
-new Url ('foo://localhost?q') .root
-// => null
-```
-
-```javascript
-new Url ('foo://localhost/') .root
-// => '/'
-```
-
-```javascript
-new Url ('foo/bar') .root
-// => null
-```
-
-```javascript
-new Url ('/foo/bar') .root
-// => '/'
-```
-
-```javascript
-new Url ('file://c:') .root
-// => null
-```
-
-```javascript
-new Url ('file://c:/') .root
-// => '/'
-```
-</details>
-<details><summary>url.drive</summary>
-
-A getter that returns the drive of `url` as a string
-or `null` if no drive is present.  
-Note that the presence of drives
-depends on the parser settings and/ or URL scheme. 
-
-```javascript
-new Url ('file://c:') .drive
-// => 'c:'
-```
-
-```javascript
-new Url ('http://c:') .drive
-// => null
-```
-
-```javascript
-new Url ('/c:/foo/bar', 'file') .drive
-// => 'c:'
-```
-
-```javascript
-new Url ('/c:/foo/bar') .drive
-// => null
-```
-</details>
-<details><summary>url.dirs</summary>
-
-TODO
-
-</details>
-<details><summary>url.file</summary>
-
-A getter that returns the file part of the path of `url` as a string, or null if no such part is present.
-
-```javascript
-new Url ('/foo/bar') .file
-// => 'bar'
-```
-
-```javascript
-new Url ('/foo/') .file
-// => null
-```
-
-</details>
-<details><summary>url.query</summary>
-
-A getter that returns the query part of `url` as a string,
-or `null` if no such part is present. 
-
-```javascript
-new Url ('http://foo?search#baz') .query
-// => 'search'
-```
-
-```javascript
-new Url ('/abc/?') .query
-// => ''
-```
-
-```javascript
-new Url ('/abc/') .query
-// => null
-```
-</details>
-<details><summary>url.hash</summary>
-
-A getter that returns the hash part of `url` as a string, 
-or `null` if no such part is present. 
-
-```javascript
-new Url ('http://foo#baz') .hash
-// => 'baz'
-```
-
-```javascript
-new Url ('/abc/#') .hash
-// => ''
-```
-
-```javascript
-new Url ('/abc/') .hash
-// => null
-```
-</details>
-
-
-### Setters
+### Set
 
 <details><summary>url.set (patch)</summary>
 
 Url objects are immutable, therefore setting and removing components is achieved via a _set_ method that takes a _patch_ object. 
 
 The _patch_ object may contain one or more keys being 
-**scheme**, **user**, **pass**, **host**, **port**, **drive**, **root**, **dirs**, **file**, **query** and/ or **hash**. To remove a component you can set its value to null.
+**scheme**, **user**, **pass**, **host**, **port**, **drive**, **root**, **dirs**, **file**, **query** and/ or **hash**. To remove a component you can set its patch' value to null.
 
 If present;
 – **port** must be `null`, a string, or a number
 – **dirs** must be an array of strings
-– **root** may be anything and is converted to `'/'` if truth-y and to `null` otherwise
+– **root** may be anything and is converted to `'/'` if truth-y and is interpreted as `null` otherwise
 – all others must be `null` or a string. 
 
 ```javascript
@@ -457,10 +447,10 @@ new Url ('//host/dir/file')
 // => '/dir/file?q#h'
 ```
 
-##### Additional resets
+##### Resets
 
-For security reasons, setting the **user** will reset **pass** to `null` unless a value is supplied for it as well. 
-Setting the **host** will reset **user**, **pass** and **port** to `null` unless values are supplied for them as well. 
+For security reasons, setting the **user** will remove **pass**, unless a value is supplied for it as well. 
+Setting the **host** will remove **user**, **pass** and **port**, unless values are supplied for them as well. 
 
 ```javascript
 new Url ('http://joe:secret@example.com')
@@ -515,11 +505,37 @@ rawUrl.toString () // => '//host/%61bc'
 </details>
 
 
-### Operations on URLs
+### Normalisation
+
+<details><summary>url.normalize (), url.normalise ()</summary>
+
+Returns a new Url object by normalizing `url`. 
+This interprets a.o. `.` and `..` segments within the path and removes default ports and trivial usernames/ passwords from the authority of `url`. 
+
+```javascript
+new Url ('http://foo/bar/baz/./../bee') .normalize () .toString ()
+// => 'http://foo/bar/bee'
+```
+</details>
+
+### Percent Coding
+
+<details><summary>url.percentEncode ()</summary>
+
+Returns a RawUrl object by percent-encoding the properties of `url` according to the Standard. Prevents double escaping of percent-encoded-bytes in the case of RawUrl objects. 
+
+</details>
+<details><summary>url.percentDecode ()</summary>
+
+Returns an Url object by percent-decoding the properties of `url` if it is a RawUrl, and leaving them as-is otherwise.
+</details>
+
+
+### Reference Resolution
 
 <details><summary>url.goto (url2)</summary>
 
-Returns a new Url object by 'extending' `url` with `url2`, where url2 may be a string or an Url object. 
+Returns a new Url object by 'extending' _url_ with _url2_, where _url2_ may be a string, an Url or a RawUrl object.
 
 ```javascript
 new Url ('/foo/bar') .goto ('baz/index.html') .toString ()
@@ -534,36 +550,31 @@ new Url ('http://foo/bar/baz/') .goto ('./../bee') .toString ()
 // => 'http://foo/bar/baz/./../bee'
 ```
 
-If `other` is a string, it will be parsed with the scheme of `url` as a fallback scheme. TODO if the scheme is null, use the conf of `url`. 
+If _url2_ is a string, it will be parsed with the scheme of _url_ as a fallback scheme. TODO: if _url_ has no scheme then …
 
 ```javascript
-new Url ('file://host/dir/') .goto ('/c:/dir2/') .toString ()
-// => 'file://host/c:/dir2/'
+new Url ('file://host/dir/') .goto ('c|/dir2/') .toString ()
+// => 'file://host/c|/dir2/'
+```
+
+```javascript
+new Url ('http://host/dir/') .goto ('c|/dir2/') .toString ()
+// => 'http://host/dir/c|/dir2/'
 ```
 
 </details>
-<details><summary>url.resolve (baseUrl)</summary>
+<details><summary>url.resolve (base)</summary>
 
-Resolve an Url object `url` against a baseUrl. This is similar to
-`baseUrl.goto (url)` but in addition it throws an error if it would not result in a base URL, being an URL that has at least a scheme and an authority. 
-</details>
-<details><summary>url.normalize (), url.normalise ()</summary>
-
-Returns a new Url object by normalizing `url`. 
-This interprets a.o. `.` and `..` segments within the path and removes default ports and trivial usernames/ passwords from the authority of `url`. 
-
-```javascript
-new Url ('http://foo/bar/baz/./../bee') .normalize () .toString ()
-// => 'http://foo/bar/bee'
-```
+Resolve an Url object _url_ against a base URL _base_. This is similar to
+`base.goto (url)` but in addition it throws an error if it would not result in a resolved URL, being an URL whose first token is either a scheme, or a hash token. 
 </details>
 <details><summary>url.force ()</summary>
 
-Forcibly convert an Url to a base URL according to the WhatWG URL standard. 
+Forcibly convert an Url to a base URL according to the Standard. 
 
 - In `file` URLs without hostname, the hostname will be set to `''`. 
-- For URLs that have a scheme being one of `http`, `https`, `ws`, `wss` or `ftp` and an absent or empty authority, the authority component will be 'stolen from the first nonempty path segment'. 
-- An error is thrown if the Url cannot be forced. This happens if it has no scheme, or if it has an empty host and no non-empty path segment. 
+- For URLs that have a scheme being one of `http`, `https`, `ws`, `wss` or `ftp` and an absent or empty authority, the authority will be 'stolen from the first nonempty path segment'. 
+- In the latter case, an error is thrown if _url_ cannot be forced. This happens if it has no scheme, or if it has an empty host and no non-empty path segment. 
 
 ```javascript
 new Url ('http:foo/bar') .force () .toString ()
@@ -582,9 +593,9 @@ new Url ('http:///foo/bar') .force () .toString ()
 // => 'http://foo/bar'
 ```
 </details>
-<details><summary>url.forceResolve (baseUrl)</summary>
+<details><summary>url.forceResolve (base)</summary>
 
-Equivalent to `url .resolve (baseUrl) .force ()`
+Equivalent to `url.resolve (base.force ()) .force ()`
 </details>
 
 ## License

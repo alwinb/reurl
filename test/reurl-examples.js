@@ -10,6 +10,18 @@ const log = console.log.bind (console)
 // Quick
 // -----
 
+var r = new RawUrl ('http://\x1F!"$&\'()*+,-.;=_`{}~/')
+pr (r)
+
+var r = new Url ('http:www.example.com') .force ()
+pr (r)
+
+var r = new Url ('http://🌿🌿🌿/{braces}/hʌɪ')
+pr (r)
+
+var r = new Url ('//foo:80\\bar')
+pr (r)
+
 var r = new Url ('non-spec:/.//') .normalize ()
 pr (r)
 
@@ -34,8 +46,11 @@ pr (r)
 var r = new Url ('http://example.com') .normalize ()
 pr (r)
 
-// Testing percentdecoded mode parsing
-var r = new Url ('http://%66%6F%6f', { percentCoding:'decode' })
+// Testing percentcoded vs decoded mode parsing
+var r = new Url ('http://%66%6F%6f')
+pr (r)
+
+var r = new RawUrl ('http://%66%6F%6f')
 pr (r)
 
 // See if special url parsing works on file
@@ -82,7 +97,7 @@ var a = new RawUrl ('http://foo/🌿🦍/%42?%F0%9F%8C%BF')
 pr (a)
 
 // Decoded url, set encoded file, non-encoded hash
-var b = new Url ('http://foo/🌿🦍/%42?%F0%9F%8C%BF', { percentCoding:'decode' })
+var b = new Url ('http://foo/🌿🦍/%42?%F0%9F%8C%BF')
   .set ({ file:'%66%6f%6f', percentCoded:true })
   .set ({ hash:'host.contains.a.%.sign', percentCoded:false })
 pr (b)
@@ -163,7 +178,7 @@ function pr (url, conf = {}) {
   log (title)
   log (title.replace (/./g, '-'))
   log (url)
-  log ('Tokens', [...url.tokens()])
+  // log ('Tokens', [...url.tokens()])
   log ()
 }
 

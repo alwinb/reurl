@@ -6,7 +6,7 @@ const log = console.log.bind (console)
 // Test 
 // ----
 
-const testData = require ('../test/data/urltestdata.json')
+const testData = require ('../test/run/urltestdata.json')
 
 class WebTests extends Tests {
   compactInput (input) { return input.href }
@@ -23,16 +23,23 @@ const testSet = new WebTests (testData, runTest)
     return input.failure || input.href === output.href
   })
 
+  .assert ('equal scheme', (input, output, error) => {
+    return input.failure || input.protocol === (output.scheme ?  output.scheme + ':' : '')
+  })
+
+  .assert ('equal host', (input, output, error) => {
+    return input.failure || input.hostname === (output.host ?? '')
+  })
+
+  .assert ('equal port', (input, output, error) => {
+    return input.failure || input.port === String (output.port ?? '')
+  })
+
 
 function runTest (test) {
-  let resolved = RawUrl.parseAndResolve (test.input, test.base)
-  resolved._href = resolved.href
-  return resolved
+  const baseUrl = new RawUrl (test.base)
+  const url = new RawUrl (test.input, { parser:baseUrl.scheme })
+  return url.forceResolve (baseUrl) .normalise () .percentEncode ()
 }
-
-// TODO validate 'dirs' to be iterable
-// And.. also make a defensive copy?
-// var r = new Url ('file:///foo').set ({ dirs:1 })
-// log (r)
 
 module.exports = testSet

@@ -1,6 +1,6 @@
 const { Url, RawUrl } = require ('../lib')
 const log = console.log.bind (console)
-const samples = require ('./data/samples')
+const samples = require ('./samples')
 const Tests = require ('./test-runner')
 
 // Set up tests
@@ -23,7 +23,7 @@ const init = test => {
 const keys = ['href', 'scheme', 'user', 'pass', 'host', 'port', 'drive', 'root', 'file', 'percentCoded' ]
 
 const equalKey = key => (test, output, error) =>
-  key in test ? output[key] === test[key] : true
+  key in test ? (test[key] == null ? output[key] == null : output[key] === test[key]) : true
   
 const equalPort = (test, output) =>
   'port' in test ? output.port === test.port : true
@@ -35,7 +35,9 @@ const equalDirs = (test, output) => {
 }
 
 const equalError = (test, output, error) =>
-  !test.error || error && error.message === test.error
+  !test.error || error && (test.error instanceof RegExp
+      ? test.error.test (error.message)
+      : error.message === test.error)
 
 //
 
