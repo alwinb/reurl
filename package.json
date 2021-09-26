@@ -3,6 +3,7 @@
   "version": "1.0.0-rc",
   "description": "URL manipulation library",
   "main": "lib/index.js",
+  "type": "module",
   "scripts": {
     "test": "make test"
   },
