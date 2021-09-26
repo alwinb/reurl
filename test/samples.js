@@ -1,6 +1,6 @@
-const { Url, RawUrl } = require ('../lib')
+import { Url, RawUrl } from '../lib/index.js'
 
-module.exports = samples = [
+export default [
 
 
   // Nonstrict goto tests

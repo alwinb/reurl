@@ -1,6 +1,6 @@
 const log = console.log.bind (console)
-const { ipv4, ipv6 } = require ('../lib/host')
-const assert = require ('assert').strict
+import { ipv4, ipv6 } from '../lib/host'
+import assert from 'assert/strict'
   assert.equals = assert.equal
   assert.deepEquals = assert.deepEqual
 
