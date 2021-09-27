@@ -12,4 +12,4 @@ log ('==================================')
 const b = testSet.run ()
 log ('\n')
 
-process.exit (a && b ? 0 : 1)
+Deno.exit (a && b ? 0 : 1)

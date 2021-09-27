@@ -1,13 +1,12 @@
 "use strict"
 import { Url, RawUrl } from '../lib/index.js'
 import Tests from './test-runner.js'
-import { readFile } from 'fs/promises'
 const log = console.log.bind (console)
 
 // Test 
 // ----
 
-const file = await readFile ('test/run/urltestdata.json', { encoding: "utf8" })
+const file = await Deno.readTextFile ('test/run/urltestdata.json')
 const testData = JSON.parse (file)
 
 class WebTests extends Tests {

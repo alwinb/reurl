@@ -1,4 +1,3 @@
-import util from 'util'
 const log = console.log.bind (console)
 
 // TestRunner
@@ -31,8 +30,8 @@ class TestRunner {
 
   log (...args) {
     for (let item of args)
-      process.stdout.write (String (item))
-    process.stdout.write ('\n')
+      Deno.stdout.write (String (item))
+    Deno.stdout.write ('\n')
   }
 
   compactInput (x) {
@@ -71,12 +70,12 @@ class TestRunner {
         if (error) {
           this.log ('threw: ', this.compactError (error))
           log ('assert: ', assertionFailures, '\n')
-          log (util.inspect ({ testCase: input, threw:error }, { depth:11 }))
+          log (Deno.inspect ({ testCase: input, threw:error }, { depth:11 }))
         }
         else {
           this.log ('result: ', this.compactOutput (output))
           log ('assert: ', assertionFailures, '\n')
-          log (util.inspect ({ testCase: input, returned:output }, { depth:11 }))
+          log (Deno.inspect ({ testCase: input, returned:output }, { depth:11 }))
         }
         log ('\n')
       }
