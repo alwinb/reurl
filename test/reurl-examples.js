@@ -1,11 +1,6 @@
-import { inspect } from 'util'
 import { Url, RawUrl } from '../lib/index.js'
 const raw = String.raw
 const log = console.log.bind (console)
-
-// import assert from 'assert/strict'
-//   assert.equals = assert.equal
-//   assert.deepEquals = assert.deepEqual
 
 // Quick
 // -----
@@ -172,9 +167,9 @@ function pr (url, conf = {}) {
   let string = url
   if (typeof url === 'string') url = new Url (url, conf)
   else string = String (url)
-  var title = inspect (string)
+  var title = Deno.inspect (string)
   if (Object.entries (conf) .length)
-    title = `${title}, ${inspect (conf)}`
+    title = `${title}, ${ Deno.inspect (conf)}`
   log (title)
   log (title.replace (/./g, '-'))
   log (url)
