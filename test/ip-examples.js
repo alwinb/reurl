@@ -1,4 +1,4 @@
-import { ipv4, ipv6 } from '../lib/host'
+import { ipv4, ipv6 } from '../lib/host.js'
 import assert from 'assert/strict'
 assert.equals = assert.equal
 assert.deepEquals = assert.deepEqual

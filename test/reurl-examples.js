@@ -1,5 +1,5 @@
 import { inspect } from 'util'
-import { Url, RawUrl } from '../lib'
+import { Url, RawUrl } from '../lib/index.js'
 const raw = String.raw
 const log = console.log.bind (console)
 
