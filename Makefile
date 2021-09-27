@@ -15,7 +15,7 @@ test: test/run/urltestdata.json
 
 clean: testclean distclean
 
-## ES module Bundle
+## ES Module Bundle
 
 dist/reurl.min.js: dist/ package.json $(sources)
 	@ echo "Making a minified ES module bundle"

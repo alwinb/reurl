@@ -8,7 +8,7 @@ import { readFile } from 'fs/promises'
 // ----
 
 const file = await readFile ('test/run/urltestdata.json', { encoding: "utf8" })
-const testData = JSON.parse(file)
+const testData = JSON.parse (file)
 
 class WebTests extends Tests {
   compactInput (input) { return input.href }
