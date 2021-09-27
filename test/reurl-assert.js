@@ -1,7 +1,7 @@
-const { Url, RawUrl } = require ('../lib')
+import { Url, RawUrl } from '../lib/index.js'
+import samples from './samples.js'
+import Tests from './test-runner.js'
 const log = console.log.bind (console)
-const samples = require ('./samples')
-const Tests = require ('./test-runner')
 
 // Set up tests
 
@@ -56,4 +56,4 @@ testset.compactOutput = function (out) {
   return JSON.stringify (String (out))
 }
 
-module.exports = testset
+export default testset

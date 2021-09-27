@@ -1,9 +1,9 @@
-const { inspect } = require ('util')
-const { Url, RawUrl } = require ('../lib')
+import { inspect } from 'util'
+import { Url, RawUrl } from '../lib/index.js'
 const raw = String.raw
 const log = console.log.bind (console)
 
-// const assert = require ('assert').strict
+// import assert from 'assert/strict'
 //   assert.equals = assert.equal
 //   assert.deepEquals = assert.deepEqual
 
