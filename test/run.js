@@ -1,6 +1,6 @@
-const log = console.log.bind (console)
 import testset from './reurl-assert.js'
 import testSet from './web-assert.js'
+const log = console.log.bind (console)
 
 log ('           Reurl tests            ')
 log ('==================================')

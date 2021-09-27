@@ -1,7 +1,7 @@
 import { Url, RawUrl } from '../lib/index.js'
-const log = console.log.bind (console)
 import samples from './samples.js'
 import Tests from './test-runner.js'
+const log = console.log.bind (console)
 
 // Set up tests
 

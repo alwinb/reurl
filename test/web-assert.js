@@ -1,8 +1,8 @@
 "use strict"
 import { Url, RawUrl } from '../lib/index.js'
 import Tests from './test-runner.js'
-const log = console.log.bind (console)
 import { readFile } from 'fs/promises'
+const log = console.log.bind (console)
 
 // Test 
 // ----

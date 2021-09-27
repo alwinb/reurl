@@ -1,8 +1,8 @@
-const log = console.log.bind (console)
 import { ipv4, ipv6 } from '../lib/host'
 import assert from 'assert/strict'
-  assert.equals = assert.equal
-  assert.deepEquals = assert.deepEqual
+assert.equals = assert.equal
+assert.deepEquals = assert.deepEqual
+const log = console.log.bind (console)
 
 const head = s => {
   log ('\n' + s)
