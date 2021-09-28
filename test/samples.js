@@ -477,15 +477,14 @@ export default [
   },
   {
     url: () =>
-      new RawUrl ('with-%25-sign/')
-      .resolve (new Url('http:/%66-%25-%6f%6f/')),
+      new RawUrl ('with-%25-sign/') .genericResolve (new Url('http:/%66-%25-%6f%6f/')),
     href: 'http:/f-%25-oo/with-%25-sign/',
     percentCoded: true,
     dirs: [ 'f-%25-oo', 'with-%25-sign.d' ],
   },
   {
     _: '... And respects schemes',
-    url: () => new Url ('http:file.txt') .resolve ('file://host/'),
+    url: () => new Url ('http:file.txt') .genericResolve ('file://host/'),
     href: 'http:file.txt'
   },
   {
@@ -493,6 +492,14 @@ export default [
     url: () => new Url ('htTP:file.txt#hash') .resolve ('HTtp://host/dir/'),
     dirs: [ 'dir' ],
     href: 'htTP://host/dir/file.txt#hash',
+  },
+
+
+  // Opaque-path-URL normalisation
+  
+  {
+    url: ( ) => new Url ('a:b/../c/.') .normalise (),
+    href: 'a:b/../c/.'
   },
 
 
@@ -530,6 +537,6 @@ export default [
   },
   {
     url: () => new Url ('http:////'). force (),
-    error: 'Cannot force <http:////>',
+    error: 'Cannot coerce <http:////> to a base-URL',
   },
 ]

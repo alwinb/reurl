@@ -10,7 +10,6 @@ const init = test => {
   if (typeof test.url === 'function') {
     test._url = test.url + ''
     output = test.url ()
-    output._href = output.href
   }
   else if (typeof test.url === 'string')
     output = new Url (test.url)

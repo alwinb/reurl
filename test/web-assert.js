@@ -41,7 +41,7 @@ const testSet = new WebTests (testData, runTest)
 function runTest (test) {
   const baseUrl = new RawUrl (test.base)
   const url = new RawUrl (test.input, { parser:baseUrl.scheme })
-  return url.forceResolve (baseUrl) .normalise () .percentEncode ()
+  return url.resolve (baseUrl) .normalise () .percentEncode ()
 }
 
 export default testSet

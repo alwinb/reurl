@@ -1,95 +1,32 @@
-# ReURL
+[![NPM badge]][NPM reurl]
 
-[![NPM version][npm-image]][npm-url]
 
-_ReUrl_ is a library for parsing and manipulating URLs. It supports relative- and non-normalized URLs and a number of operations on them. It can be used to parse, resolve, normalize and serialze URLs in separate phases and in such a way that it conforms to the [WhatWG URL Standard][1]. 
+ReURL
+=====
 
-[1]: https://url.spec.whatwg.org/
-[npm-image]: https://img.shields.io/npm/v/reurl.svg
-[npm-url]: https://npmjs.org/package/reurl
+_ReUrl_ is a library for parsing and manipulating URLs. It supports relative- and non-normalized URLs and a number of operations on them. It can be used to parse, resolve, normalize and serialize URLs in separate phases and in such a way that it conforms to the [WhatWG URL Standard]. 
 
-## Motivation
-<details><summary> Motivation </summary>
+[NPM badge]: https://img.shields.io/npm/v/reurl.svg
+[NPM reurl]: https://npmjs.org/package/reurl/
+[WhatWG URL Standard]: https://url.spec.whatwg.org/
+[WHATWG Standard]: https://url.spec.whatwg.org/
+[RFC3986]: https://tools.ietf.org/html/rfc3986/
+
+
+Motivation
+----------
 
 I wrote this library because I needed a library that supported non-normalized and relative URLs but I also wanted to be certain that it followed the specification completely. 
 
-The [WhatWG URL Standard][1] defines URLs in terms of a parser algorithm that resolves URLs, normalizes URLs and serializes URL components in one pass. Thus to implement a library that follows the standard, but also supports more versatile set of operations on relative, and non-normalized URLs, I had to disentangle these phases from the specification and to some extent rephrase the specification in more elementary terms. 
+The [WhatWG URL Standard] defines URLs in terms of a parser algorithm that resolves URLs, normalizes URLs and serializes URL components in one pass. Thus to implement a library that follows the standard, but also supports a versatile set of operations on **relative**, and **non-normalized** URLs, I had to disentangle these phases from the specification and to some extent rephrase the specification in more elementary terms. 
 
-Eventually I came up with a small 'theory' of URLs that I found very helpful and I based the library on that. 
-</details>
+Eventually I came up with a small 'theory' of URLs that I found very helpful and I based the library on that. Over time, this theory has become thoroughly documented in this new [URL Specification]. 
 
-## Theory of URLs
-
-<details><summary>Theory of URLs</summary>
-
-### URLs
-
-An **URL** is a sequence of tokens where tokens are tuples (_type_, _value_), where
-
-  - _type_ is taken from the set { **scheme**, **authority**, **drive**, **root**, **directory**, **file**, **query**, **fragment** } and
-  - if _type_ is **authority** then value is an **Authority**, otherwise value is a string.
-
-URLs are subject to the following structural constraints:
-
-  - URLs contain at most one token per type, except for **directory**-tokens (of which they may have any amount),
-  - tokens are ordered by type according to **scheme** < **authority** < **drive** < **root** < **directory** < **file** < **query** < **fragment** and
-  - if an URL has an **authority** or a **drive** token, and it has a **directory** or a **file** token, then it also has a **root** token. 
-
-An **Authority** is a named tuple (_username_, _password_, _hostname_, _port_) where
-
-  - _hostname_ is an ipv6-address, an opaque-host-string, an ipv4-address, a domain (-string) or the empty string. 
-  - _username_ and _password_ are either null or a string,
-  - port is either null or an integer in the range 0 to 2<sup>16</sup>–1. 
-
-Autorities are subject to the following constraints:
-
-  - if _password_ is a string, then _username_ is a string.  
-  - if _hostname_ is the empty string, then _port_, _username_ and _password_ are null. 
+[URL Specification]: https://alwinb.github.io/url-specification/#url-specification
 
 
-### File URLs
-
-There are two additional constraints that set file URLs apart form non-file URLs. 
-
-- If an URL has a **scheme** token whose value _is not_ `file` then it must not have a **drive** token. 
-- If an URL has a **scheme** token whose value _is_ `file` and it has an **authority** token then *password*, *username* and *port* must be null. 
-
-
-### Operations on URLs
-
-By the definition above, URLs are a special case of ordered lists, where 
-the ordering reflects the hierarchical structure of the URL. 
-This makes it relatively easy to define and implement the key operations on URLs, as follows:
-
-* The **type** of an URL (type _url_) is defined to be:
-  - **fragment** if _url_ is the empty URL.
-  - The type of its first token otherwise. 
-
-* The **type-limited prefix** (_url1_ upto _t_) is defined to be
-  - the _shortest_ prefix of _url1_ that contains
-    - all tokens of _url1_ with a type strictly smaller than _t_ and
-    - all **directory** tokens with a type weakly smaller than _t_. 
-
-* The **goto** operation (_url1_ goto _url2_) is defined to return:
-  - the _shortest_ URL that has _url1_ upto (type _url2_) as a prefix and _url2_ as a postfix. 
-
-* The **_nonstrict_ goto** operation (_url1_ goto' _url2_) is defined to be (_url1_ goto _url2'_) where
-  - _url2'_ is _url2_ with the **scheme** token removed if it equals the **scheme** token of _url1_, or _url2_ otherwise. 
-
-
-### Properties
-
-Some properties of URLs and their operations:
-
-- type (url1 goto url2) is the least type of {type url1, type url2}. 
-- (url1 goto url2) goto url3 = url1 goto (url2 goto url3). 
-- empty goto url2 = url2. 
-- url1 goto empty = url1 is **not** true in general (the fragment is dropped). 
-- similar for goto'. 
-- url2 is a postfix of (url1 goto url2) but not necessarily of (url1 goto' url2).
-</details>
-
-## API
+API
+---
 
 ### Overview
 
@@ -121,7 +58,7 @@ url.toString () // => '//host/%61bc?%25%64ef'
 ```
 </details>
 
-Url and RawUrl objects are immutable. Modifying URLs is acomplished through methods that return new Url and/ or RawUrl objects. 
+Url and RawUrl objects are **immutable**. Modifying URLs is acomplished through methods that return new Url and/ or RawUrl objects, such as the **url.set (patch)** method described below. 
 
 ### Constructors
 
@@ -330,7 +267,7 @@ new Url ('/c:/foo/bar') .drive
 </details>
 <details><summary>url.dirs</summary>
 
-If present, a nonempty array of strings. Note that the trailing slash determines whether a component is part of the **dirs** or set as the **file** property. 
+If present, a _nonempty_ array of strings. Note that the trailing slash determines whether a component is part of the **dirs** or set as the **file** property. 
 
 ```javascript
 new Url ('/foo/bar/baz/').dirs
@@ -400,36 +337,11 @@ new Url ('/abc/') .hash
 </details>
 
 
-### Conversions
+### Setting Properties
 
-<details><summary>url.toString ()</summary>
-
-Converts an Url object to a string. Percent encodes only a minimal set of codepoints. The resulting string may contain non-ASCII codepoints. 
-
-```javascript
-var url = new Url ('http://🌿🌿🌿/{braces}/hʌɪ')
-url.toString ()
-// => 'http://🌿🌿🌿/%7Bbraces%7D/hʌɪ'
-```
-
-</details>
-<details><summary>url.toASCII (), url.toJSON (), url.href</summary>
-
-Converts an Url object to a string that contains only ASCII code points.  Non-ASCII codepoints in components will be percent encoded and/ or punycoded. 
-
-```javascript
-var url = new Url ('http://🌿🌿🌿/{braces}/hʌɪ')
-url.toASCII ()
-// => 'http://xn--8h8haa/%7Bbraces%7D/h%CA%8C%C9%AA'
-```
-</details>
-
-
-### Set
+Url and RawUrl objects are **immutable**, therefore setting and removing components is achieved via a _set_ method that takes a _patch_ object.
 
 <details><summary>url.set (patch)</summary>
-
-Url objects are immutable, therefore setting and removing components is achieved via a _set_ method that takes a _patch_ object. 
 
 The _patch_ object may contain one or more keys being 
 **scheme**, **user**, **pass**, **host**, **port**, **drive**, **root**, **dirs**, **file**, **query** and/ or **hash**. To remove a component you can set its patch' value to null.
@@ -505,6 +417,36 @@ rawUrl.toString () // => '//host/%61bc'
 </details>
 
 
+### Conversions
+
+<details><summary>url.toString ()</summary>
+
+Converts an Url object to a string. Percent encodes only a minimal set of codepoints. The resulting string may contain non-ASCII codepoints. 
+
+```javascript
+var url = new Url ('http://🌿🌿🌿/{braces}/hʌɪ')
+url.toString ()
+// => 'http://🌿🌿🌿/%7Bbraces%7D/hʌɪ'
+```
+
+</details>
+<details><summary>url.toASCII (), url.toJSON (), url.href</summary>
+
+Converts an Url object to a string that contains only ASCII code points.  Non-ASCII codepoints in components will be percent encoded and/ or punycoded. 
+
+```javascript
+var url = new Url ('http://🌿🌿🌿/{braces}/hʌɪ')
+url.toASCII ()
+// => 'http://xn--8h8haa/%7Bbraces%7D/h%CA%8C%C9%AA'
+```
+</details>
+<details><summary>url.toURI ()</summary>
+
+Uses url.toASCII () to convert url to an [RFC3986] URI. Throws an error if url does not have a scheme, because URIs must always have a scheme. 
+
+</details>
+
+
 ### Normalisation
 
 <details><summary>url.normalize (), url.normalise ()</summary>
@@ -531,7 +473,7 @@ Returns an Url object by percent-decoding the properties of `url` if it is a Raw
 </details>
 
 
-### Reference Resolution
+### Goto
 
 <details><summary>url.goto (url2)</summary>
 
@@ -563,14 +505,18 @@ new Url ('http://host/dir/') .goto ('c|/dir2/') .toString ()
 ```
 
 </details>
-<details><summary>url.resolve (base)</summary>
 
-Resolve an Url object _url_ against a base URL _base_. This is similar to
-`base.goto (url)` but in addition it throws an error if it would not result in a resolved URL, being an URL whose first token is either a scheme, or a hash token. 
+
+### Base URLs
+
+<details><summary>url.isBase ()</summary>
+
+Returns a boolean, indicating if _url_ is a _base-URL_. What is and is not a base-URL, depends on the _scheme_ of an URL. For example, `http`- and `file`-URLs that do not have a _host_ are not base-URLs. 
+
 </details>
 <details><summary>url.force ()</summary>
 
-Forcibly convert an Url to a base URL according to the Standard. 
+Forcibly convert an Url to a base-URL according to this [URL Specification], in accordance with the [WHATWG Standard]. 
 
 - In `file` URLs without hostname, the hostname will be set to `''`. 
 - For URLs that have a scheme being one of `http`, `https`, `ws`, `wss` or `ftp` and an absent or empty authority, the authority will be 'stolen from the first nonempty path segment'. 
@@ -593,12 +539,45 @@ new Url ('http:///foo/bar') .force () .toString ()
 // => 'http://foo/bar'
 ```
 </details>
-<details><summary>url.forceResolve (base)</summary>
 
-Equivalent to `url.resolve (base.force ()) .force ()`
+
+### Reference Resolution
+
+[RFC-resolution]: https://datatracker.ietf.org/doc/html/rfc3986#section-5.2
+
+<details><summary>url.genericResolve (base) — RFC3986 - strict</summary>
+
+Resolve an Url object _url_ against a base URL _base_ according to the **strict** [reference resolution][RFC-resolution] algorithm as defined in RFC3986.
+</details>
+<details><summary>url.legacyResolve (base) — RFC 3986 - non-strict</summary>
+
+Resolve an Url object _url_ against a base URL _base_ according to the **non-strict** [reference resolution][RFC-resolution] algorithm as defined in RFC3986.
+</details>
+<details><summary>url.WHATWGResolve (base), aka. url.resolve</summary>
+
+Resolve an Url object _url_ against a base URL _base_ in a way that is compatible with the error-correcting, forcing reference resoluton algorithm as defined in the [WHATWG Standard].
 </details>
 
-## License
+
+Changelog
+---------
+
+### Version 1.0.0-rc.2
+
+* Converted the project from a CommonJS Module to an ES Module. 
+* Updated the core to use spec-url version 2.0.0-dev.1
+* Changes to the API for reference resolution. 
+
+ReUrl now exposes three methods for reference resolution:
+
+- url.genericResolve (base)
+- url.legacyResolve (base)
+- url.WHATWGResolve (base), also known as
+- url.resolve (base)
+
+
+License
+-------
 
 MIT. 
 
