@@ -1,6 +1,6 @@
 {
   "name": "reurl",
-  "version": "1.0.0-rc",
+  "version": "1.0.0-rc.2",
   "description": "URL manipulation library",
   "main": "lib/index.js",
   "type": "module",
