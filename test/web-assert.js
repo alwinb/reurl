@@ -1,12 +1,14 @@
 "use strict"
-const { Url, RawUrl } = require ('../lib')
-const Tests = require ('./test-runner')
+import { Url, RawUrl } from '../lib/index.js'
+import Tests from './test-runner.js'
+import { readFile } from 'fs/promises'
 const log = console.log.bind (console)
 
 // Test 
 // ----
 
-const testData = require ('../test/run/urltestdata.json')
+const file = await readFile ('test/run/urltestdata.json', { encoding: "utf8" })
+const testData = JSON.parse (file)
 
 class WebTests extends Tests {
   compactInput (input) { return input.href }
@@ -39,7 +41,7 @@ const testSet = new WebTests (testData, runTest)
 function runTest (test) {
   const baseUrl = new RawUrl (test.base)
   const url = new RawUrl (test.input, { parser:baseUrl.scheme })
-  return url.forceResolve (baseUrl) .normalise () .percentEncode ()
+  return url.resolve (baseUrl) .normalise () .percentEncode ()
 }
 
-module.exports = testSet
+export default testSet

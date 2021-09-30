@@ -1,6 +1,6 @@
 .PHONY: all test clean update testclean distclean
 
-files = browser.js index.js
+files = index.js
 sources = $(addprefix lib/, $(files))
 
 #run: all
@@ -15,11 +15,11 @@ test: test/run/urltestdata.json
 
 clean: testclean distclean
 
-## Browser Bundle
+## ES Module Bundle
 
 dist/reurl.min.js: dist/ package.json $(sources)
-	@ echo "Making a minified browser bundle"
-	@ esbuild --bundle --minify --keep-names lib/browser.js > dist/reurl.min.js
+	@ echo "Making a minified ES module bundle"
+	@ esbuild --bundle  --format=esm --minify lib/index.js > dist/reurl.min.js
 
 dist/:
 	@ mkdir dist/

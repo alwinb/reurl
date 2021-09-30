@@ -1,7 +1,7 @@
-const { Url, RawUrl } = require ('../lib')
+import { Url, RawUrl } from '../lib/index.js'
+import samples from './samples.js'
+import Tests from './test-runner.js'
 const log = console.log.bind (console)
-const samples = require ('./samples')
-const Tests = require ('./test-runner')
 
 // Set up tests
 
@@ -10,7 +10,6 @@ const init = test => {
   if (typeof test.url === 'function') {
     test._url = test.url + ''
     output = test.url ()
-    output._href = output.href
   }
   else if (typeof test.url === 'string')
     output = new Url (test.url)
@@ -56,4 +55,4 @@ testset.compactOutput = function (out) {
   return JSON.stringify (String (out))
 }
 
-module.exports = testset
+export default testset
