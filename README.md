@@ -25,12 +25,39 @@ Eventually I came up with a small 'theory' of URLs that I found very helpful and
 [URL Specification]: https://alwinb.github.io/url-specification/#url-specification
 
 
+Installation
+---
+
+### Node.js
+
+```
+npm install reurl
+```
+
+### Standalone minified build
+
+```
+git clone https://github.com/alwinb/reurl.git
+cd reurl
+make all
+cp dist/reurl.min.js /my/project/js/
+```
+
+
 API
 ---
 
 ### Overview
 
 The ReUrl library exposes an Url class and a RawUrl class with an identical API. Their only difference is in their handling of percent escape sequences. 
+
+In a Node.JS project, you can use these classes as follows:
+
+```javascript
+import { Url, RawUrl } from 'reurl'
+```
+
+**Note:** ReUrl is an ESM-only module, so it cannot be imported with `require`.
 
 <details><summary>Url</summary>
 
