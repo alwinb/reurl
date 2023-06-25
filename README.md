@@ -39,7 +39,8 @@ npm install reurl
 ```
 git clone https://github.com/alwinb/reurl.git
 cd reurl
-make all
+npm install    # install dependencies
+npm run build  # create minified builds in dist/
 cp dist/reurl.min.js /my/project/js/
 ```
 
@@ -53,11 +54,21 @@ The ReUrl library exposes an Url class and a RawUrl class with an identical API.
 
 In a Node.JS project, you can use these classes as follows:
 
+#### With `import` (for modern ESM modules)
+
 ```javascript
 import { Url, RawUrl } from 'reurl'
 ```
 
-**Note:** ReUrl is an ESM-only module, so it cannot be imported with `require`.
+#### With `require` (for legacy CommonJS modules)
+
+```javascript
+const Url = require('reurl').Url
+```
+
+```javascript
+const RawUrl = require('reurl').RawUrl
+```
 
 <details><summary>Url</summary>
 
