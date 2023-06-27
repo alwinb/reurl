@@ -2,9 +2,16 @@
   "name": "reurl",
   "version": "1.0.0-rc.2",
   "description": "URL manipulation library",
-  "main": "lib/index.js",
+  "main": "./dist/reurl.cjs",
+  "module": "lib/index.js",
   "type": "module",
+  "exports": {
+    "import": "./lib/index.js",
+    "require": "./dist/reurl.cjs"
+  },
   "scripts": {
+    "build": "make",
+    "prepare": "npm run build",
     "test": "make test"
   },
   "repository": {
@@ -27,5 +34,8 @@
   "license": "MIT",
   "dependencies": {
     "spec-url": "^2.0.0-dev.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.18.6"
   }
 }

@@ -39,7 +39,8 @@ npm install reurl
 ```
 git clone https://github.com/alwinb/reurl.git
 cd reurl
-make all
+npm install    # install dependencies
+npm run build  # create minified builds in dist/
 cp dist/reurl.min.js /my/project/js/
 ```
 
@@ -49,15 +50,7 @@ API
 
 ### Overview
 
-The ReUrl library exposes an Url class and a RawUrl class with an identical API. Their only difference is in their handling of percent escape sequences. 
-
-In a Node.JS project, you can use these classes as follows:
-
-```javascript
-import { Url, RawUrl } from 'reurl'
-```
-
-**Note:** ReUrl is an ESM-only module, so it cannot be imported with `require`.
+The ReUrl library exposes an Url class and a RawUrl class with an identical API. Their only difference is in their handling of percent escape sequences.
 
 <details><summary>Url</summary>
 
@@ -86,6 +79,26 @@ url.toString () // => '//host/%61bc?%25%64ef'
 </details>
 
 Url and RawUrl objects are **immutable**. Modifying URLs is acomplished through methods that return new Url and/ or RawUrl objects, such as the **url.set (patch)** method described below. 
+
+### Usage
+
+In a Node.JS project, you can use the `Url` and `RawUrl` classes as follows:
+
+#### With `import` (for modern ESM modules)
+
+```javascript
+import { Url, RawUrl } from 'reurl'
+```
+
+#### With `require` (for legacy CommonJS modules)
+
+```javascript
+const Url = require('reurl').Url
+```
+
+```javascript
+const RawUrl = require('reurl').RawUrl
+```
 
 ### Constructors
 

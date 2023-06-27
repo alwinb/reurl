@@ -6,7 +6,7 @@ sources = $(addprefix lib/, $(files))
 #run: all
 #	@ echo $(sources)
 
-all: dist/reurl.min.js
+all: dist/reurl.min.js dist/reurl.cjs dist/reurl.min.cjs
 
 test: test/run/urltestdata.json
 	@ echo ""
@@ -20,6 +20,18 @@ clean: testclean distclean
 dist/reurl.min.js: dist/ package.json $(sources)
 	@ echo "Making a minified ES module bundle"
 	@ esbuild --bundle  --format=esm --minify lib/index.js > dist/reurl.min.js
+
+## CommonJS bundle
+
+dist/reurl.cjs: dist/ package.json $(sources)
+	@ echo "Making a minified CommonJS bundle"
+	@ esbuild --bundle  --format=cjs lib/index.js > dist/reurl.cjs
+
+## CommonJS bundle (minified)
+
+dist/reurl.min.cjs: dist/ package.json $(sources)
+	@ echo "Making a minified CommonJS bundle"
+	@ esbuild --bundle  --format=cjs --minify lib/index.js > dist/reurl.min.cjs
 
 dist/:
 	@ mkdir dist/
